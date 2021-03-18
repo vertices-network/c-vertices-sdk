@@ -53,4 +53,18 @@ void app_error_handler(err_code_t error_code, uint32_t line_num, const uint8_t *
         }                                                   \
     } while (0)
 
+/**@brief Macro for calling error handler function if supplied boolean value is false.
+ *
+ * @param[in] BOOLEAN_VALUE Boolean value to be evaluated.
+ */
+#define VTC_ASSERT_BOOL(BOOLEAN_VALUE)                        \
+    do                                                        \
+    {                                                         \
+        const uint32_t LOCAL_BOOLEAN_VALUE = (BOOLEAN_VALUE); \
+        if (!LOCAL_BOOLEAN_VALUE)                             \
+        {                                                     \
+            APP_ERROR_HANDLER(0);                             \
+        }                                                     \
+    } while (0)
+
 #endif //VERTICES_INC_VERTICES_ERRORS_H

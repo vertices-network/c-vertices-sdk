@@ -8,10 +8,11 @@
 #include <stdint.h>
 #include "account.h"
 #include "vertices_errors.h"
+#include "provider.h"
 
 typedef struct
 {
-    int32_t example;
+    provider_t provider;
 } vertice_t;
 
 err_code_t
