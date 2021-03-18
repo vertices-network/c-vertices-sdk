@@ -1,0 +1,38 @@
+set(VERTICES_SRC_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/vertices_errors.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/vertices.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/account.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/http/http_curl.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/providers/algorand_provider.c
+        )
+
+set(VERTICES_INC_FOLDERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/inc
+        )
+
+message(STATUS "Vertices SDK: ${CMAKE_CURRENT_SOURCE_DIR}")
+
+add_library(vertices STATIC ${VERTICES_SRC_FILES})
+target_include_directories(vertices
+        PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/config>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../mdk>"
+        "$<INSTALL_INTERFACE:inc>"
+        )
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/inc/vertices.h DESTINATION inc)
+
+install(TARGETS vertices
+        EXPORT verticesTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION inc
+        )
+
+install(EXPORT verticesTargets
+        FILE verticesTargets.cmake
+        NAMESPACE Vertices::
+        DESTINATION lib/cmake/vertices
+        )

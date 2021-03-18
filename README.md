@@ -36,7 +36,7 @@ git submodule add <url> [path]
 
 ### Configuration
 
-A config file provides an easy way to configure the SDK: [`config/vertices_config.h`](config/vertices_config.h). The file is fully documented.
+A config file provides an easy way to configure the SDK: [`config/vertices_config.h`](lib/config/vertices_config.h). The file is fully documented.
 
 It is advised to copy that config file into your project if you want to track it with your Version Control System.
 
