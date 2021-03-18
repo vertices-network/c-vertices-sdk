@@ -35,6 +35,9 @@ err_code_t
 provider_get_version(provider_version_t * version);
 
 err_code_t
+provider_ping();
+
+err_code_t
 provider_init();
 
 #endif //VERTICES_SRC_PROVIDER_H

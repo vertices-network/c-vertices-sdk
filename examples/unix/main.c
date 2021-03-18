@@ -15,6 +15,10 @@ main(int argc, char *argv[])
     err_code_t err_code = vertices_new();
     VTC_ASSERT(err_code);
 
+    // making sure the provider is accessible
+    err_code = provider_ping();
+    VTC_ASSERT(err_code);
+
     // ask for provider version
     provider_version_t version = {0};
     err_code = provider_get_version(&version);

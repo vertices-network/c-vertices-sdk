@@ -53,6 +53,13 @@ provider_get_version(provider_version_t * version)
 }
 
 err_code_t
+provider_ping()
+{
+    err_code_t err_code = http_get(&m_provider, "/health", "");
+    return err_code;
+}
+
+err_code_t
 provider_init()
 {
     m_provider.response_payload_cb = response_payload_callback;
