@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
-set(PROJECT_NAME vertices)
-project(${PROJECT_NAME} C ASM)
+set(PROJECT_NAME Vertices-SDK)
+project(${PROJECT_NAME})
 
 # Set variable VERTICES_ROOT to absolute path of that file location
 get_filename_component(VERTICES_ROOT . ABSOLUTE)
