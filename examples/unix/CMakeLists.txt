@@ -5,7 +5,6 @@ set(SRC_FILES
         )
 
 set(INC_FOLDERS
-        ${VERTICES_INC_FOLDERS}
         )
 
 set(CFLAGS)

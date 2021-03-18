@@ -6,10 +6,6 @@ set(VERTICES_SRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/providers/algorand_provider.c
         )
 
-set(VERTICES_INC_FOLDERS
-        ${CMAKE_CURRENT_SOURCE_DIR}/inc
-        )
-
 message(STATUS "Vertices SDK: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_library(vertices STATIC ${VERTICES_SRC_FILES})
