@@ -1,5 +1,28 @@
 # 💎 Vertices SDK
 
+## Specifications
+
+The Vertices SDK provides developers with an easy way to implement Blockchain wallets on embedded devices.
+
+We are doing our best to achieve those goals:
+
+- C library, can be included into C++ projects.
+- Can be easily imported into any project
+- Examples that will be provided:
+  - Unix-based OSes
+  - ESP-IDF
+  - Zephyr
+- Connect to any Algorand API `algod` (local or remote provider)
+- Build with CMake and Make
+- Continuous Integration to maintain code quality:
+  - Build static library for several targets
+  - Unit-Testing
+
+At Vertices Network, we want to free your mind from the hassle of a safe design. Here are other projects we are working on:
+
+- Secure Element support for future and more secure designs
+- Encrypted Flash for current designs
+
 ## Installation
 
 This repository is intended to be used as an external component to your project such as a submodule.
