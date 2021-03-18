@@ -16,4 +16,7 @@ http_get(const provider_t * provider, char* relative_path, const char * headers)
 err_code_t
 http_post(const provider_t * provider, char* relative_path, const char * headers, const char* body);
 
+void
+http_close();
+
 #endif //VERTICES_INC_HTTP_H

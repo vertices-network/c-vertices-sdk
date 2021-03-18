@@ -37,12 +37,14 @@ response_payload_callback(void *received_data, size_t size, size_t count, void *
 }
 
 err_code_t
-provider_get_version()
+provider_get_version(provider_version_t * version)
 {
     err_code_t err_code = http_get(&m_provider, "/versions", "");
 
     if (err_code == VTC_SUCCESS)
     {
+        memset(version, 0, sizeof(provider_version_t));
+
         // TODO parse rx_buf using cJSON
         LOG_DEBUG("%s", rx_buf);
     }

@@ -12,8 +12,8 @@
 
 typedef struct
 {
-    provider_t provider;
-} vertice_t;
+    int nothing;
+} vertex_t;
 
 err_code_t
 vertices_new();

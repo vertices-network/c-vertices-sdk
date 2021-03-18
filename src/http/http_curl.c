@@ -22,6 +22,7 @@ http_init(const provider_t *provider)
         return VTC_ERROR_INTERNAL;
     }
 
+    curl_easy_setopt(m_curl, CURLOPT_PORT, provider->port);
     curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, provider->response_payload_cb);
 
     return VTC_SUCCESS;
@@ -45,14 +46,12 @@ http_get(const provider_t *provider, char *relative_path, const char *headers)
         struct curl_slist *chunk = NULL;
         chunk = curl_slist_append(chunk, headers);
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, chunk);
-
-        curl_easy_setopt(m_curl, CURLOPT_PORT, provider->port);
         curl_easy_setopt(m_curl, CURLOPT_URL, url_full);
+        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, &provider->response_buffer);
+
 #ifdef DEBUG
         curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L);
 #endif
-        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, &provider->response_buffer);
-//        curl_easy_setopt(m_curl, CURLOPT_HEADERDATA, &header);
 
         /* Perform the request, res will get the return code */
         res = curl_easy_perform(m_curl);
@@ -65,7 +64,7 @@ http_get(const provider_t *provider, char *relative_path, const char *headers)
         }
 
         curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
-        LOG_DEBUG("GET response: %ld", response_code);
+        LOG_DEBUG("GET %s response %ld", url_full, response_code);
 
         /* free the custom headers */
         curl_slist_free_all(chunk);
@@ -85,15 +84,18 @@ http_post(const provider_t *provider, char *relative_path, const char *headers, 
 
     err_code_t ret_code = VTC_SUCCESS;
     CURLcode res;
+    long response_code;
 
-    char url_full[128] = {0};
-    strcat(url_full, provider->url);
-    strcat(url_full, relative_path);
-
-    m_curl = curl_easy_init();
+    char url_full[512] = {0};
+    sprintf(url_full, "%s%s", provider->url, relative_path);
 
     if (m_curl)
     {
+        /* set our custom set of headers */
+        struct curl_slist *chunk = NULL;
+        chunk = curl_slist_append(chunk, headers);
+        curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, chunk);
+
         /* First set the URL that is about to receive our POST. This URL can
            just as well be a https:// URL if that is what should receive the
            data. */
@@ -110,6 +112,12 @@ http_post(const provider_t *provider, char *relative_path, const char *headers, 
         {
             LOG_ERROR("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
         }
+
+        curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
+        LOG_DEBUG("GET %s response %ld", url_full, response_code);
+
+        /* free the custom headers */
+        curl_slist_free_all(chunk);
     }
     else
     {
@@ -117,4 +125,13 @@ http_post(const provider_t *provider, char *relative_path, const char *headers, 
     }
 
     return ret_code;
+}
+
+void
+http_close()
+{
+    curl_easy_cleanup(m_curl);
+    curl_global_cleanup();
+
+    m_curl = NULL;
 }

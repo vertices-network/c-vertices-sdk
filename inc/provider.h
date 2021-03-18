@@ -23,8 +23,16 @@ typedef struct
     (*response_payload_cb)(void *received_data, size_t size, size_t count, void *response_payload);
 } provider_t;
 
+typedef struct {
+    char network[64];
+    char genesis_hash[64];
+    unsigned int major;
+    unsigned int minor;
+    unsigned int patch;
+} provider_version_t;
+
 err_code_t
-provider_get_version();
+provider_get_version(provider_version_t * version);
 
 err_code_t
 provider_init();

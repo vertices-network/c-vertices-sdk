@@ -14,13 +14,5 @@ vertices_new()
 
     provider_init();
 
-    provider_get_version();
-
     return err_code;
-}
-
-err_code_t
-vertices_get_health(vertice_t *new)
-{
-    return VTC_SUCCESS;
 }
