@@ -1,0 +1,6 @@
+[submodule "external/mpack"]
+	path = external/mpack
+	url = https://github.com/ludocode/mpack
+[submodule "external/lwip"]
+	path = external/lwip
+	url = https://github.com/lwip-tcpip/lwip
