@@ -15,6 +15,7 @@ typedef enum {
     VTC_ERROR_INVALID_PARAM,
     VTC_ERROR_INVALID_STATE,
     VTC_ERROR_INVALID_ADDR,
+    VTC_ERROR_OFFLINE,
 } err_code_t;
 
 /**@brief Structure containing info about an error of the type @ref NRF_FAULT_ID_SDK_ERROR.

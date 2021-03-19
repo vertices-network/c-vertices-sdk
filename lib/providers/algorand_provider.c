@@ -14,7 +14,6 @@ static size_t
 response_payload_callback(void *received_data, size_t size, size_t count, void *response_payload);
 
 static char rx_buf[HTTP_MAXIMUM_CONTENT_LENGTH];
-
 static provider_t m_provider = {0};
 
 static size_t
@@ -58,26 +57,26 @@ provider_get_version(provider_version_t *version)
             const cJSON *genesis_id = cJSON_GetObjectItemCaseSensitive(json, "genesis_id");
             if (cJSON_IsString(genesis_id) && (genesis_id->valuestring != NULL))
             {
-                if (strlen(genesis_id->valuestring) >= sizeof version->network)
+                if (strlen(genesis_id->valuestring) >= sizeof m_provider.version.network)
                 {
                     err_code = VTC_ERROR_NO_MEM;
                 }
                 else
                 {
-                    strcpy(version->network, genesis_id->valuestring);
+                    strcpy(m_provider.version.network, genesis_id->valuestring);
                 }
             }
 
             const cJSON *genesis_hash = cJSON_GetObjectItemCaseSensitive(json, "genesis_hash_b64");
             if (cJSON_IsString(genesis_hash) && (genesis_hash->valuestring != NULL))
             {
-                if (strlen(genesis_id->valuestring) >= sizeof version->network)
+                if (strlen(genesis_hash->valuestring) >= sizeof m_provider.version.genesis_hash)
                 {
                     err_code = VTC_ERROR_NO_MEM;
                 }
                 else
                 {
-                    strcpy(version->genesis_hash, genesis_hash->valuestring);
+                    strcpy(m_provider.version.genesis_hash, genesis_hash->valuestring);
                 }
             }
 
@@ -88,20 +87,33 @@ provider_get_version(provider_version_t *version)
 
             if (cJSON_IsNumber(major))
             {
-                version->major = major->valueint;
+                m_provider.version.major =  major->valueint;
             }
             if (cJSON_IsNumber(minor))
             {
-                version->minor = minor->valueint;
+                m_provider.version.minor =  minor->valueint;
             }
             if (cJSON_IsNumber(patch))
             {
-                version->patch = patch->valueint;
+                m_provider.version.patch =  patch->valueint;
             }
         }
 
         cJSON_Delete(json);
     }
+    else if (m_provider.version.major != 0 && m_provider.version.minor != 0 &&  m_provider.version.patch != 0)
+    {
+        err_code = VTC_ERROR_OFFLINE;
+    }
+
+    // local copy of version has been updated (or not)
+    // copy version into caller structure
+    strcpy(version->network, m_provider.version.network);
+    strcpy(version->genesis_hash, m_provider.version.genesis_hash);
+
+    version->major = m_provider.version.major;
+    version->minor = m_provider.version.minor;
+    version->patch = m_provider.version.patch;
 
     return err_code;
 }

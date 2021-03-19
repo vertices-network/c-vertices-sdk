@@ -3,7 +3,7 @@
 //
 
 #include <provider.h>
-#include "../inc/vertices.h"
+#include "vertices.h"
 
 static int m_socket = 0;
 

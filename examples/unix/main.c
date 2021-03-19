@@ -36,7 +36,14 @@ main(int argc, char *argv[])
     // ask for provider version
     provider_version_t version = {0};
     err_code = vertices_version(&version);
-    VTC_ASSERT(err_code);
+    if(err_code == VTC_ERROR_OFFLINE)
+    {
+        LOG_WARNING("Version might not be accurate: old value is being used");
+    }
+    else
+    {
+        VTC_ASSERT(err_code);
+    }
 
     LOG_INFO("Running on %s v.%u.%u.%u. Genesis: %s",
              version.network,
