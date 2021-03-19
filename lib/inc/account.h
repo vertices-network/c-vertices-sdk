@@ -23,7 +23,6 @@ typedef struct
     account_info_t * info;
     long round;
     char address[ADDRESS_LENGTH];
-    long long amount;
     long long pendingrewards;
     long long amountwithoutpendingrewards;
     long long rewards;

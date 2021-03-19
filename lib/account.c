@@ -12,7 +12,7 @@
 static account_details_t m_accounts[ACCOUNTS_MAXIMUM_COUNT] = {0};
 
 err_code_t
-account_add(account_info_t *account, size_t * id)
+account_add(account_info_t *account, size_t *id)
 {
     VTC_ASSERT_BOOL(account != NULL);
     err_code_t err_code;
@@ -21,7 +21,7 @@ account_add(account_info_t *account, size_t * id)
     size_t i = 0;
     for (i = 0; i < ACCOUNTS_MAXIMUM_COUNT; ++i)
     {
-        if(m_accounts[i].info == NULL)
+        if (m_accounts[i].info == NULL)
         {
             LOG_DEBUG("Creating account #%zu", i);
             break;

@@ -6,6 +6,7 @@
 #include <libc.h>
 #include "vertices_errors.h"
 #include <http.h>
+#include <mpack-reader.h>
 #include "provider.h"
 #include "cJSON.h"
 
@@ -19,6 +20,8 @@ static size_t
 response_payload_callback(void *received_data, size_t size, size_t count, void *response_payload)
 {
     size_t received_data_size = size * count;
+
+    LOG_DEBUG("Received %zu bytes", received_data_size);
 
     VTC_ASSERT_BOOL(received_data_size < HTTP_MAXIMUM_CONTENT_LENGTH);
 
@@ -37,7 +40,8 @@ provider_get_account_info(account_details_t *account)
     char relative_path[128] = {0};
     char headers[128] = {0};
 
-    size_t len = sprintf(relative_path, "/v2/accounts/%s?format=json", account->info->public_addr);
+    size_t
+        len = sprintf(relative_path, "/v2/accounts/%s?format=msgpack", account->info->public_addr);
     VTC_ASSERT_BOOL(len < 128);
 
     len = sprintf(headers, "X-Algo-API-Token:%s", m_provider.providers[0].token);
@@ -47,7 +51,55 @@ provider_get_account_info(account_details_t *account)
                                    relative_path, headers, &m_provider.response_buffer);
     if (err_code == VTC_SUCCESS)
     {
-        LOG_DEBUG("%s", rx_buf);
+        // we are reading messagepack data
+        mpack_reader_t reader;
+        mpack_reader_init_data(&reader, rx_buf, m_provider.response_buffer.size);
+
+        mpack_tag_t tag = mpack_read_tag(&reader);
+        if (mpack_reader_error(&reader) != mpack_ok)
+        {
+            return VTC_ERROR_INTERNAL;
+        }
+
+        // response to /account is a map with different optional fields
+        // see https://developer.algorand.org/docs/reference/rest-apis/algod/v2/#account
+        // `algo`, `appl`, `tsch`, `ebase` ... etc
+        // TODO parse in account.c?
+        if (mpack_tag_type(&tag) == mpack_type_map)
+        {
+            uint32_t count = mpack_tag_map_count(&tag);
+
+            for (uint32_t i = 0; i < count; ++i)
+            {
+                char str_buf[64] = {0};
+                mpack_tag_t tag = mpack_read_tag(&reader);
+                if (mpack_tag_type(&tag) == mpack_type_str)
+                {
+                    uint32_t length = mpack_tag_str_length(&tag);
+                    const char *data = mpack_read_bytes_inplace(&reader, length);
+                    memcpy(str_buf, data, length);
+
+                    mpack_tag_t value = mpack_read_tag(&reader);
+                    if (mpack_tag_type(&value) == mpack_type_uint)
+                    {
+                        long long long_value = mpack_tag_uint_value(&value);
+                        if (strcmp(str_buf, "algo") == 0)
+                        {
+                            account->info->amount = long_value;
+                        }
+                        else if (strcmp(str_buf, "ebase") == 0)
+                        {
+                            // don't care at the moment
+                        }
+                        LOG_DEBUG("%s = %llu", str_buf, long_value);
+                    }
+                }
+            }
+
+            mpack_done_map(&reader);
+        }
+
+        VTC_ASSERT_BOOL(mpack_reader_destroy(&reader) == mpack_ok);
     }
 
     return err_code;
