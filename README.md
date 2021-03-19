@@ -1,6 +1,6 @@
 # 💎 Vertices SDK
 
-## Specifications
+## 📑 Specifications
 
 The Vertices SDK provides developers with an easy way to implement Blockchain wallets on embedded devices.
 
@@ -23,7 +23,33 @@ At Vertices Network, we want to free your mind from the hassle of a safe design.
 - Secure Element support for future and more secure designs
 - Encrypted Flash for current designs
 
-## Installation
+## 🧭 Repository structure
+
+```shell
+.
+├── CMakeLists.txt      # root CMakeLists: use it if you want to try the examples
+├── examples            # examples
+│   ├── unix            # Unix example to run the wallet on your machine or Raspberry Pi...
+│   └── ...             # more to come
+├── external            # external libraries
+│   ├── mpack           # we've got mpack for example
+│   └── cJson           # cJSON to parse JSON payloads
+├── inc                 # public include directory: you'll need those files to use the library
+│   ├── vertices.h      # for example, `vertices.h`
+│   └── ...
+├── lib                 # 
+│   ├── inc             # "private" header files, used within the library
+│   ├── providers       # implementations of providers. The Algorand provider is the first implemented.
+│   ├── http            # HTTP wrappers functions, GET, POST... several implementations available for several stacks (libcurl, ESP-IDF...)
+│   ├── CMakeLists.txt  # CMake of the Vertices SDK, exports a package to be imported in your project, see examples' CMakeLists
+│   └── ...             # source files
+├── mdk                 # the SDK is running on several architecture, we need some compiler abstraction
+│   └── compilers.h
+└── utils               # tools to make things easier, clearer, smarter :) 
+    └── utils.cmake
+```
+
+## 🧰 Installation
 
 This repository is intended to be used as an external component to your project such as a submodule.
 
@@ -36,7 +62,7 @@ git submodule add <url> [path]
 
 ### Configuration
 
-A config file provides an easy way to configure the SDK: [`config/vertices_config.h`](lib/config/vertices_config.h). The file is fully documented.
+A config file provides an easy way to configure the SDK: [`config/vertices_config.h`](examples/unix/config/vertices_config.h). The file is fully documented.
 
 It is advised to copy that config file into your project if you want to track it with your Version Control System.
 
@@ -47,7 +73,7 @@ There are currently two build systems supported:
 * CMake
 * GNU Make
 
-Those are providing the static library: `libvertices`.
+Those are providing the static library: `libvertices.a`.
 
 #### CMake
 
@@ -61,29 +87,19 @@ make
 
 #### Make
 
-In order to build from the source code using GNU Make, just enter at the command line:
-
-```shell
-make
-```
+👎 Soon.
 
 ## Getting started
 
-Although the Vertices SDK is providing simple ways to connect and interact with a blockchain, you will need to provide platform-specific functions.
-
-* Functions to receive/send data through an HTTP socket:
-    * `vertices_net_connect(char *url, int * socket_id)`
-    * `vertices_net_send(int socket_id, char *data, size_t length)`
-    * `vertices_net_receive(int socket_id, char *data, size_t *size)`
-    * `vertices_net_close(int * socket_id)`
+👉 More to come about how to import the package into your build system.
 
 > 💡 Vertices will provide [examples](examples/) with various major SDKs, such as the ESP-IDF for Espressif microcontrollers. You can probably copy-paste our source code into your project 🙂.
 
-## Tests
+## 📐 Tests
 
 👎 There are no unit-tests at the moment.
 
-## Contributing
+## 🙌 Contributing
 
 🤗 We gratefully accept bug reports and contributions from the community.
 
