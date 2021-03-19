@@ -6,7 +6,6 @@
 #include <libc.h>
 #include "vertices_errors.h"
 #include <http.h>
-#include "vertices.h"
 #include "provider.h"
 #include "cJSON.h"
 
@@ -30,6 +29,28 @@ response_payload_callback(void *received_data, size_t size, size_t count, void *
     memcpy(rx_buf, received_data, received_data_size);
 
     return received_data_size;
+}
+
+err_code_t
+provider_get_account_info(account_details_t *account)
+{
+    char relative_path[128] = {0};
+    char headers[128] = {0};
+
+    size_t len = sprintf(relative_path, "/v2/accounts/%s?format=json", account->info->public_addr);
+    VTC_ASSERT_BOOL(len < 128);
+
+    len = sprintf(headers, "X-Algo-API-Token:%s", m_provider.providers[0].token);
+    VTC_ASSERT_BOOL(len < 128);
+
+    err_code_t err_code = http_get(&m_provider.providers[0],
+                                   relative_path, headers, &m_provider.response_buffer);
+    if (err_code == VTC_SUCCESS)
+    {
+        LOG_DEBUG("%s", rx_buf);
+    }
+
+    return err_code;
 }
 
 err_code_t
@@ -87,21 +108,22 @@ provider_get_version(provider_version_t *version)
 
             if (cJSON_IsNumber(major))
             {
-                m_provider.version.major =  major->valueint;
+                m_provider.version.major = major->valueint;
             }
             if (cJSON_IsNumber(minor))
             {
-                m_provider.version.minor =  minor->valueint;
+                m_provider.version.minor = minor->valueint;
             }
             if (cJSON_IsNumber(patch))
             {
-                m_provider.version.patch =  patch->valueint;
+                m_provider.version.patch = patch->valueint;
             }
         }
 
         cJSON_Delete(json);
     }
-    else if (m_provider.version.major != 0 && m_provider.version.minor != 0 &&  m_provider.version.patch != 0)
+    else if (m_provider.version.major != 0 && m_provider.version.minor != 0
+        && m_provider.version.patch != 0)
     {
         err_code = VTC_ERROR_OFFLINE;
     }
@@ -127,7 +149,7 @@ provider_ping()
 }
 
 err_code_t
-provider_init(http_remote_t *providers, size_t count)
+provider_init(provider_info_t *providers, size_t count)
 {
     for (size_t i = 0; i < count; ++i)
     {

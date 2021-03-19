@@ -5,6 +5,8 @@
 #ifndef VERTICES_INC_HTTP_H
 #define VERTICES_INC_HTTP_H
 
+#include "vertices_types.h"
+
 #ifndef HTTP_MAXIMUM_CONTENT_LENGTH
 #define HTTP_MAXIMUM_CONTENT_LENGTH 1024
 #endif
@@ -23,13 +25,13 @@ typedef struct
 } http_remote_t;
 
 err_code_t
-http_init(const http_remote_t * provider, size_t (*response_payload_cb)(void *received_data, size_t size, size_t count, void *response_payload));
+http_init(const provider_info_t * provider, size_t (*response_payload_cb)(void *received_data, size_t size, size_t count, void *response_payload));
 
 err_code_t
-http_get(const http_remote_t * provider, char* relative_path, const char * headers, payload_t* response_buf);
+http_get(const provider_info_t * provider, char* relative_path, const char * headers, payload_t* response_buf);
 
 err_code_t
-http_post(const http_remote_t * provider, char* relative_path, const char * headers, const char* body);
+http_post(const provider_info_t * provider, char* relative_path, const char * headers, const char* body);
 
 void
 http_close();

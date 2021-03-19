@@ -5,6 +5,8 @@
 #ifndef C_VERTICES_SDK_SRC_ACCOUNT_H
 #define C_VERTICES_SDK_SRC_ACCOUNT_H
 
+#include <vertices_types.h>
+#include <stdio.h>
 #define ADDRESS_LENGTH  64
 
 typedef struct
@@ -18,6 +20,7 @@ typedef struct
 
 typedef struct
 {
+    account_info_t * info;
     long round;
     char address[ADDRESS_LENGTH];
     long long amount;
@@ -25,6 +28,15 @@ typedef struct
     long long amountwithoutpendingrewards;
     long long rewards;
     participation_t participation;
-} account_information_t;
+} account_details_t;
+
+err_code_t
+account_add(account_info_t *account, size_t * id);
+
+err_code_t
+account_delete(size_t id);
+
+err_code_t
+account_init();
 
 #endif //C_VERTICES_SDK_SRC_ACCOUNT_H

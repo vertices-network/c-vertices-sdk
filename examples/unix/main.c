@@ -6,18 +6,25 @@
 #include <vertices_log.h>
 #include "../../inc/vertices_errors.h"
 #include <vertices_config.h>
+#include <provider.h>
 
-#define PROVIDERS_COUNT 2
+#define PROVIDERS_NUMBER 2
+#define ACCOUNT_NUMBER 2
 
-static provider_info_t providers[PROVIDERS_COUNT] =
+static provider_info_t providers[PROVIDERS_NUMBER] =
 {
     {.url = SERVER_URL, .port = SERVER_PORT, .token = SERVER_TOKEN},
     {.url = SERVER_URL, .port = SERVER_PORT, .token = SERVER_TOKEN},
 };
 
+static account_info_t accounts[ACCOUNT_NUMBER] = {
+    {.public_addr = "RQKZZG4H7XDK72D2MK34UIP2UIJRXDDYMY6P3UZU4TZSC4G4IMDF63HPHE", .amount = 0},
+    {.public_addr = "RQKZZG4H7XDK72D2MK34UIP2UIJRXDDYMY6P3UZU4TZSC4G4IMDF63HPHE", .amount = 0},
+};
+
 static vertex_t m_vertex = {
     .providers = providers,
-    .count = PROVIDERS_COUNT,
+    .provider_count = PROVIDERS_NUMBER,
 };
 
 int
@@ -51,4 +58,13 @@ main(int argc, char *argv[])
              version.minor,
              version.patch,
              version.genesis_hash);
+
+    // create an account
+    size_t account_handle = 0;
+    err_code = vertices_add_account(&accounts[0], &account_handle);
+    VTC_ASSERT(err_code);
+
+    // delete the created account
+    err_code = vertices_del_account(account_handle);
+    VTC_ASSERT(err_code);
 }

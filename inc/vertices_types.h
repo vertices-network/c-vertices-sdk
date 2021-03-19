@@ -14,10 +14,15 @@ typedef struct
     char *token;
 } provider_info_t;
 
+typedef struct {
+    char * public_addr;
+    long long amount;
+} account_info_t;
+
 typedef struct
 {
     provider_info_t *providers;
-    size_t count;
+    size_t provider_count;
 } vertex_t;
 
 typedef struct

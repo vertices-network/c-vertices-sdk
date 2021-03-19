@@ -6,8 +6,10 @@
 #define VERTICES_SRC_PROVIDER_H
 
 #include <stdio.h>
-#include "../../inc/vertices_types.h"
+#include "vertices_types.h"
 #include "http.h"
+#include <account.h>
+
 
 #ifndef PROVIDER_MAXIMUM_FALLBACKS
 #define PROVIDER_MAXIMUM_FALLBACKS 4
@@ -15,12 +17,15 @@
 
 typedef struct
 {
-    http_remote_t providers[PROVIDER_MAXIMUM_FALLBACKS];
+    provider_info_t providers[PROVIDER_MAXIMUM_FALLBACKS];
     provider_version_t version;
     payload_t response_buffer;
     size_t
     (*response_payload_cb)(void *received_data, size_t size, size_t count, void *response_payload);
 } provider_t;
+
+err_code_t
+provider_get_account_info(account_details_t * account);
 
 ///
 /// \param version
@@ -34,6 +39,6 @@ err_code_t
 provider_ping();
 
 err_code_t
-provider_init(http_remote_t *providers, size_t count);
+provider_init(provider_info_t *providers, size_t count);
 
 #endif //VERTICES_SRC_PROVIDER_H

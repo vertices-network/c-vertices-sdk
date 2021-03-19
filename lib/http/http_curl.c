@@ -12,7 +12,7 @@
 static CURL *m_curl;
 
 err_code_t
-http_init(const http_remote_t *provider,
+http_init(const provider_info_t *provider,
           size_t (*response_payload_cb)(void *, size_t, size_t, void *))
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -30,7 +30,7 @@ http_init(const http_remote_t *provider,
 }
 
 err_code_t
-http_get(const http_remote_t *provider,
+http_get(const provider_info_t *provider,
          char *relative_path,
          const char *headers,
          payload_t *response_buf)
@@ -84,7 +84,7 @@ http_get(const http_remote_t *provider,
 }
 
 err_code_t
-http_post(const http_remote_t *provider, char *relative_path, const char *headers, const char *body)
+http_post(const provider_info_t *provider, char *relative_path, const char *headers, const char *body)
 {
     VTC_ASSERT_BOOL(m_curl != NULL);
 
