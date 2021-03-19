@@ -6,17 +6,16 @@
 #define VERTICES_SRC_VERTICE_H
 
 #include <stdint.h>
-#include "account.h"
-#include "vertices_errors.h"
-#include "provider.h"
-
-typedef struct
-{
-    int nothing;
-} vertex_t;
+#include <stdio.h>
+#include "vertices_types.h"
 
 err_code_t
-vertices_new();
+vertices_version(provider_version_t *version);
 
+err_code_t
+vertices_ping();
+
+err_code_t
+vertices_new(vertex_t *config);
 
 #endif //VERTICES_SRC_VERTICE_H

@@ -2,7 +2,7 @@
 // Created by Cyril on 18/03/2021.
 //
 
-#include <vertices_errors.h>
+#include "../../inc/vertices_errors.h"
 #include <provider.h>
 #include <curl/curl.h>
 #include <vertices_log.h>
@@ -12,7 +12,8 @@
 static CURL *m_curl;
 
 err_code_t
-http_init(const provider_t *provider)
+http_init(const http_remote_t *provider,
+          size_t (*response_payload_cb)(void *, size_t, size_t, void *))
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     m_curl = curl_easy_init();
@@ -23,13 +24,16 @@ http_init(const provider_t *provider)
     }
 
     curl_easy_setopt(m_curl, CURLOPT_PORT, provider->port);
-    curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, provider->response_payload_cb);
+    curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, response_payload_cb);
 
     return VTC_SUCCESS;
 }
 
 err_code_t
-http_get(const provider_t *provider, char *relative_path, const char *headers)
+http_get(const http_remote_t *provider,
+         char *relative_path,
+         const char *headers,
+         payload_t *response_buf)
 {
     VTC_ASSERT_BOOL(m_curl != NULL);
 
@@ -47,7 +51,7 @@ http_get(const provider_t *provider, char *relative_path, const char *headers)
         chunk = curl_slist_append(chunk, headers);
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, chunk);
         curl_easy_setopt(m_curl, CURLOPT_URL, url_full);
-        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, &provider->response_buffer);
+        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, response_buf);
 
 #ifdef DEBUG
         curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L);
@@ -62,9 +66,11 @@ http_get(const provider_t *provider, char *relative_path, const char *headers)
             LOG_ERROR("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
             ret_code = VTC_ERROR_INTERNAL;
         }
-
-        curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
-        LOG_DEBUG("GET %s response %ld", url_full, response_code);
+        else
+        {
+            curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
+            LOG_DEBUG("GET %s response %ld", url_full, response_code);
+        }
 
         /* free the custom headers */
         curl_slist_free_all(chunk);
@@ -78,7 +84,7 @@ http_get(const provider_t *provider, char *relative_path, const char *headers)
 }
 
 err_code_t
-http_post(const provider_t *provider, char *relative_path, const char *headers, const char *body)
+http_post(const http_remote_t *provider, char *relative_path, const char *headers, const char *body)
 {
     VTC_ASSERT_BOOL(m_curl != NULL);
 

@@ -4,9 +4,9 @@
 
 #include <vertices_log.h>
 #include <libc.h>
-#include <vertices_errors.h>
+#include "../../inc/vertices_errors.h"
 #include <http.h>
-#include <vertices_config.h>
+#include "../../inc/vertices.h"
 #include "provider.h"
 
 static size_t
@@ -14,11 +14,7 @@ response_payload_callback(void *received_data, size_t size, size_t count, void *
 
 static char rx_buf[HTTP_MAXIMUM_CONTENT_LENGTH];
 
-static provider_t m_provider = {
-    .url = SERVER_URL,
-    .port = SERVER_PORT,
-    .response_payload_cb = response_payload_callback,
-};
+static provider_t m_provider = {0};
 
 static size_t
 response_payload_callback(void *received_data, size_t size, size_t count, void *response_payload)
@@ -27,7 +23,7 @@ response_payload_callback(void *received_data, size_t size, size_t count, void *
 
     VTC_ASSERT_BOOL(received_data_size < HTTP_MAXIMUM_CONTENT_LENGTH);
 
-    payload_t *payload = (payload_t *)response_payload;
+    payload_t *payload = (payload_t *) response_payload;
     payload->data = rx_buf;
     payload->size = received_data_size;
 
@@ -37,9 +33,9 @@ response_payload_callback(void *received_data, size_t size, size_t count, void *
 }
 
 err_code_t
-provider_get_version(provider_version_t * version)
+provider_get_version(provider_version_t *version)
 {
-    err_code_t err_code = http_get(&m_provider, "/versions", "");
+    err_code_t err_code = http_get(&m_provider.providers[0], "/versions", "", &m_provider.response_buffer);
 
     if (err_code == VTC_SUCCESS)
     {
@@ -55,16 +51,23 @@ provider_get_version(provider_version_t * version)
 err_code_t
 provider_ping()
 {
-    err_code_t err_code = http_get(&m_provider, "/health", "");
+    err_code_t err_code = http_get(&m_provider.providers[0], "/health", "", &m_provider.response_buffer);
     return err_code;
 }
 
 err_code_t
-provider_init()
+provider_init(http_remote_t *providers, size_t count)
 {
+    for (size_t i = 0; i < count; ++i)
+    {
+        m_provider.providers[i].url = providers[i].url;
+        m_provider.providers[i].port = providers[i].port;
+        m_provider.providers[i].token = providers[i].token;
+    }
+
     m_provider.response_payload_cb = response_payload_callback;
 
-    err_code_t err_code = http_init(&m_provider);
+    err_code_t err_code = http_init(&m_provider.providers[0], response_payload_callback);
     VTC_ASSERT(err_code);
 
     return err_code;

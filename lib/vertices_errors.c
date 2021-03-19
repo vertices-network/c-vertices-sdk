@@ -4,7 +4,7 @@
 
 #include <vertices_log.h>
 #include <stdint.h>
-#include <vertices_errors.h>
+#include "../inc/vertices_errors.h"
 #include "compilers.h"
 
 /**

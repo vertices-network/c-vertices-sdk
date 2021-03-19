@@ -12,12 +12,13 @@ add_library(vertices STATIC ${VERTICES_SRC_FILES})
 target_include_directories(vertices
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>"
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/config>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../inc>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../mdk>"
-        "$<INSTALL_INTERFACE:inc>"
+        "$<INSTALL_INTERFACE:../inc>"
         )
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/inc/vertices.h DESTINATION inc)
+# public header files
+install(FILES ../inc/vertices.h ../inc/vertices_errors.h ../inc/vertices_types.h DESTINATION inc)
 
 install(TARGETS vertices
         EXPORT verticesTargets

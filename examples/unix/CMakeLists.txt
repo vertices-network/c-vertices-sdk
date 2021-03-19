@@ -5,6 +5,7 @@ set(SRC_FILES
         )
 
 set(INC_FOLDERS
+        config
         )
 
 set(CFLAGS)
