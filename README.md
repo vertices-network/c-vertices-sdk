@@ -89,7 +89,7 @@ make
 
 👎 Soon.
 
-## Getting started
+## 🚀 Getting started
 
 👉 More to come about how to import the package into your build system.
 
