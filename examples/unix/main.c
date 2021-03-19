@@ -52,7 +52,7 @@ main(int argc, char *argv[])
         VTC_ASSERT(err_code);
     }
 
-    LOG_INFO("Running on %s v.%u.%u.%u. Genesis: %s",
+    LOG_INFO("🏎 Running on %s v.%u.%u.%u. Genesis: %s",
              version.network,
              version.major,
              version.minor,
@@ -63,6 +63,8 @@ main(int argc, char *argv[])
     size_t account_handle = 0;
     err_code = vertices_add_account(&accounts[0], &account_handle);
     VTC_ASSERT(err_code);
+
+    LOG_INFO("🤑 %llu Algos on %s",  accounts[0].amount, accounts[0].public_addr);
 
     // delete the created account
     err_code = vertices_del_account(account_handle);
