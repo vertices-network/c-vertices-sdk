@@ -7,6 +7,11 @@ get_filename_component(VERTICES_ROOT . ABSOLUTE)
 
 include(utils/utils.cmake)
 
+set(CMAKE_MACOSX_RPATH 1)
+
 message(STATUS "💎 Loading targets")
+add_subdirectory(external/cJSON)
 add_subdirectory(lib)
+
+# examples
 add_subdirectory(examples/unix)

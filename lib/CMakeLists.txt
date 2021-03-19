@@ -14,6 +14,7 @@ target_include_directories(vertices
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../inc>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../mdk>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/cJSON>"
         "$<INSTALL_INTERFACE:../inc>"
         )
 
@@ -33,3 +34,5 @@ install(EXPORT verticesTargets
         NAMESPACE Vertices::
         DESTINATION lib/cmake/vertices
         )
+
+target_link_libraries(vertices cjson)

@@ -38,12 +38,10 @@ main(int argc, char *argv[])
     err_code = vertices_version(&version);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("Running on %s %u.%u.%u %s",
+    LOG_INFO("Running on %s v.%u.%u.%u. Genesis: %s",
              version.network,
              version.major,
              version.minor,
              version.patch,
              version.genesis_hash);
-
-    LOG_DEBUG("Returned %d", err_code);
 }

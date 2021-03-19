@@ -4,10 +4,11 @@
 
 #include <vertices_log.h>
 #include <libc.h>
-#include "../../inc/vertices_errors.h"
+#include "vertices_errors.h"
 #include <http.h>
-#include "../../inc/vertices.h"
+#include "vertices.h"
 #include "provider.h"
+#include "cJSON.h"
 
 static size_t
 response_payload_callback(void *received_data, size_t size, size_t count, void *response_payload);
@@ -35,14 +36,71 @@ response_payload_callback(void *received_data, size_t size, size_t count, void *
 err_code_t
 provider_get_version(provider_version_t *version)
 {
-    err_code_t err_code = http_get(&m_provider.providers[0], "/versions", "", &m_provider.response_buffer);
+    err_code_t
+        err_code = http_get(&m_provider.providers[0], "/versions", "", &m_provider.response_buffer);
 
     if (err_code == VTC_SUCCESS)
     {
         memset(version, 0, sizeof(provider_version_t));
 
-        // TODO parse rx_buf using cJSON
-        LOG_DEBUG("%s", rx_buf);
+        cJSON *json = cJSON_Parse(rx_buf);
+        if (json == NULL)
+        {
+            const char *error_ptr = cJSON_GetErrorPtr();
+            if (error_ptr != NULL)
+            {
+                LOG_ERROR("JSON, error before: %s", error_ptr);
+            }
+            err_code = VTC_ERROR_INTERNAL;
+        }
+        else
+        {
+            const cJSON *genesis_id = cJSON_GetObjectItemCaseSensitive(json, "genesis_id");
+            if (cJSON_IsString(genesis_id) && (genesis_id->valuestring != NULL))
+            {
+                if (strlen(genesis_id->valuestring) >= sizeof version->network)
+                {
+                    err_code = VTC_ERROR_NO_MEM;
+                }
+                else
+                {
+                    strcpy(version->network, genesis_id->valuestring);
+                }
+            }
+
+            const cJSON *genesis_hash = cJSON_GetObjectItemCaseSensitive(json, "genesis_hash_b64");
+            if (cJSON_IsString(genesis_hash) && (genesis_hash->valuestring != NULL))
+            {
+                if (strlen(genesis_id->valuestring) >= sizeof version->network)
+                {
+                    err_code = VTC_ERROR_NO_MEM;
+                }
+                else
+                {
+                    strcpy(version->genesis_hash, genesis_hash->valuestring);
+                }
+            }
+
+            const cJSON *build = cJSON_GetObjectItemCaseSensitive(json, "build");
+            const cJSON *major = cJSON_GetObjectItemCaseSensitive(build, "major");
+            const cJSON *minor = cJSON_GetObjectItemCaseSensitive(build, "minor");
+            const cJSON *patch = cJSON_GetObjectItemCaseSensitive(build, "patch");
+
+            if (cJSON_IsNumber(major))
+            {
+                version->major = major->valueint;
+            }
+            if (cJSON_IsNumber(minor))
+            {
+                version->minor = minor->valueint;
+            }
+            if (cJSON_IsNumber(patch))
+            {
+                version->patch = patch->valueint;
+            }
+        }
+
+        cJSON_Delete(json);
     }
 
     return err_code;
@@ -51,7 +109,8 @@ provider_get_version(provider_version_t *version)
 err_code_t
 provider_ping()
 {
-    err_code_t err_code = http_get(&m_provider.providers[0], "/health", "", &m_provider.response_buffer);
+    err_code_t
+        err_code = http_get(&m_provider.providers[0], "/health", "", &m_provider.response_buffer);
     return err_code;
 }
 
