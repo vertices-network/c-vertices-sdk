@@ -16,6 +16,8 @@ response_payload_callback(void *received_data, size_t size, size_t count, void *
 static char rx_buf[HTTP_MAXIMUM_CONTENT_LENGTH];
 static provider_t m_provider = {0};
 
+static char base_headers[128] = {0}; /// contains x-api-key
+
 static size_t
 response_payload_callback(void *received_data, size_t size, size_t count, void *response_payload)
 {
@@ -38,17 +40,13 @@ err_code_t
 provider_get_account_info(account_details_t *account)
 {
     char relative_path[128] = {0};
-    char headers[128] = {0};
 
     size_t
         len = sprintf(relative_path, "/v2/accounts/%s?format=msgpack", account->info->public_addr);
     VTC_ASSERT_BOOL(len < 128);
 
-    len = sprintf(headers, "X-Algo-API-Token:%s", m_provider.providers[0].token);
-    VTC_ASSERT_BOOL(len < 128);
-
     err_code_t err_code = http_get(&m_provider.providers[0],
-                                   relative_path, headers, &m_provider.response_buffer);
+                                   relative_path, base_headers, &m_provider.response_buffer);
     if (err_code == VTC_SUCCESS)
     {
         // we are reading messagepack data
@@ -109,7 +107,7 @@ err_code_t
 provider_get_version(provider_version_t *version)
 {
     err_code_t
-        err_code = http_get(&m_provider.providers[0], "/versions", "", &m_provider.response_buffer);
+        err_code = http_get(&m_provider.providers[0], "/versions", base_headers, &m_provider.response_buffer);
 
     if (err_code == VTC_SUCCESS)
     {
@@ -196,7 +194,7 @@ err_code_t
 provider_ping()
 {
     err_code_t
-        err_code = http_get(&m_provider.providers[0], "/health", "", &m_provider.response_buffer);
+        err_code = http_get(&m_provider.providers[0], "/health", base_headers, &m_provider.response_buffer);
     return err_code;
 }
 
@@ -211,6 +209,9 @@ provider_init(provider_info_t *providers, size_t count)
     }
 
     m_provider.response_payload_cb = response_payload_callback;
+
+    size_t len = sprintf(base_headers, "x-api-key:%s", m_provider.providers[0].token);
+    VTC_ASSERT_BOOL(len < 128);
 
     err_code_t err_code = http_init(&m_provider.providers[0], response_payload_callback);
     VTC_ASSERT(err_code);
