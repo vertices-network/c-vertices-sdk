@@ -23,7 +23,10 @@ http_init(const provider_info_t *provider,
         return VTC_ERROR_INTERNAL;
     }
 
-    curl_easy_setopt(m_curl, CURLOPT_PORT, provider->port);
+    if(provider->port != 0)
+    {
+        curl_easy_setopt(m_curl, CURLOPT_PORT, provider->port);
+    }
     curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, response_payload_cb);
 
     return VTC_SUCCESS;
@@ -70,6 +73,11 @@ http_get(const provider_info_t *provider,
         {
             curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
             LOG_DEBUG("GET %s response %ld", url_full, response_code);
+
+            if (response_code >= 300)
+            {
+                ret_code = VTC_HTTP_ERROR + response_code;
+            }
         }
 
         /* free the custom headers */
