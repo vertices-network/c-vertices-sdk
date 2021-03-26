@@ -27,13 +27,85 @@ response_payload_callback(void *received_data, size_t size, size_t count, void *
 
     VTC_ASSERT_BOOL(received_data_size < HTTP_MAXIMUM_CONTENT_LENGTH);
 
-    payload_t *payload = (payload_t *) response_payload;
+    payload_t *payload = (payload_t *)response_payload;
     payload->data = rx_buf;
     payload->size = received_data_size;
 
     memcpy(rx_buf, received_data, received_data_size);
 
     return received_data_size;
+}
+
+static err_code_t
+parse_account_field(mpack_reader_t *reader, char *field, account_details_t *account)
+{
+    err_code_t ret_code = VTC_SUCCESS;
+
+    mpack_tag_t value = mpack_read_tag(reader);
+
+    if(strncmp(field, "algo", sizeof "algo" - 1) == 0)
+    {
+        account->info->amount = mpack_tag_uint_value(&value);
+    }
+    else if(strncmp(field, "ebase", sizeof "ebase" - 1) == 0)
+    {
+        // nothing yet
+    }
+    else
+    {
+        ret_code = VTC_ERROR_NOT_FOUND;
+    }
+    
+
+    return ret_code;
+}
+
+/// parse MessagePack data for `/accounts` response
+static err_code_t
+parse_accounts_msgpack(account_details_t *account, char *buf, size_t len)
+{
+    // we are reading messagepack data
+    mpack_reader_t reader;
+    mpack_reader_init_data(&reader, buf, len);
+
+    mpack_tag_t tag = mpack_read_tag(&reader);
+    if (mpack_reader_error(&reader) != mpack_ok)
+    {
+        return VTC_ERROR_INTERNAL;
+    }
+
+    // response to /account is a map with different optional fields
+    // see https://developer.algorand.org/docs/reference/rest-apis/algod/v2/#account
+    // `algo`, `appl`, `tsch`, `ebase` ... etc
+
+    // Parse the map containing `count` elements
+    if (mpack_tag_type(&tag) == mpack_type_map)
+    {
+        uint32_t count = mpack_tag_map_count(&tag);
+
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            char str_buf[64] = {0};
+            mpack_tag_t tag = mpack_read_tag(&reader);
+
+            // elements are `string` followed by `value`
+            if (mpack_tag_type(&tag) == mpack_type_str)
+            {
+                uint32_t length = mpack_tag_str_length(&tag);
+                // data is the pointer to the value
+                const char *data = mpack_read_bytes_inplace(&reader, length);
+
+                err_code_t ret_code = parse_account_field(&reader, data, account);
+                VTC_ASSERT(ret_code);
+            }
+        }
+
+        mpack_done_map(&reader);
+    }
+
+    VTC_ASSERT_BOOL(mpack_reader_destroy(&reader) == mpack_ok);
+
+    return VTC_SUCCESS;
 }
 
 err_code_t
@@ -49,55 +121,7 @@ provider_get_account_info(account_details_t *account)
                                    relative_path, base_headers, &m_provider.response_buffer);
     if (err_code == VTC_SUCCESS)
     {
-        // we are reading messagepack data
-        mpack_reader_t reader;
-        mpack_reader_init_data(&reader, rx_buf, m_provider.response_buffer.size);
-
-        mpack_tag_t tag = mpack_read_tag(&reader);
-        if (mpack_reader_error(&reader) != mpack_ok)
-        {
-            return VTC_ERROR_INTERNAL;
-        }
-
-        // response to /account is a map with different optional fields
-        // see https://developer.algorand.org/docs/reference/rest-apis/algod/v2/#account
-        // `algo`, `appl`, `tsch`, `ebase` ... etc
-        // TODO parse in account.c?
-        if (mpack_tag_type(&tag) == mpack_type_map)
-        {
-            uint32_t count = mpack_tag_map_count(&tag);
-
-            for (uint32_t i = 0; i < count; ++i)
-            {
-                char str_buf[64] = {0};
-                mpack_tag_t tag = mpack_read_tag(&reader);
-                if (mpack_tag_type(&tag) == mpack_type_str)
-                {
-                    uint32_t length = mpack_tag_str_length(&tag);
-                    const char *data = mpack_read_bytes_inplace(&reader, length);
-                    memcpy(str_buf, data, length);
-
-                    mpack_tag_t value = mpack_read_tag(&reader);
-                    if (mpack_tag_type(&value) == mpack_type_uint)
-                    {
-                        long long long_value = mpack_tag_uint_value(&value);
-                        if (strcmp(str_buf, "algo") == 0)
-                        {
-                            account->info->amount = long_value;
-                        }
-                        else if (strcmp(str_buf, "ebase") == 0)
-                        {
-                            // don't care at the moment
-                        }
-                        LOG_DEBUG("%s = %llu", str_buf, long_value);
-                    }
-                }
-            }
-
-            mpack_done_map(&reader);
-        }
-
-        VTC_ASSERT_BOOL(mpack_reader_destroy(&reader) == mpack_ok);
+        parse_accounts_msgpack(account, rx_buf, m_provider.response_buffer.size);
     }
 
     return err_code;
@@ -172,8 +196,7 @@ provider_get_version(provider_version_t *version)
 
         cJSON_Delete(json);
     }
-    else if (m_provider.version.major != 0 && m_provider.version.minor != 0
-        && m_provider.version.patch != 0)
+    else if (m_provider.version.major != 0 && m_provider.version.minor != 0 && m_provider.version.patch != 0)
     {
         err_code = VTC_ERROR_OFFLINE;
     }
