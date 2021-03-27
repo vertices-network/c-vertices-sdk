@@ -45,11 +45,11 @@ parse_account_field(mpack_reader_t *reader, char *field, account_details_t *acco
 
     if(strncmp(field, "algo", sizeof "algo" - 1) == 0)
     {
-        account->info->amount = mpack_tag_uint_value(&value);
+        account->info->amount = (int32_t) mpack_tag_uint_value(&value);
     }
     else if(strncmp(field, "ebase", sizeof "ebase" - 1) == 0)
     {
-        // nothing yet
+        account->reward_base = (int32_t) mpack_tag_uint_value(&value);
     }
     else
     {
