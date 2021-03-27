@@ -16,7 +16,7 @@ typedef struct
 
 typedef struct {
     char * public_addr;
-    long long amount;
+    int32_t amount;
 } account_info_t;
 
 typedef struct
