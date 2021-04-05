@@ -7,7 +7,8 @@
 
 #include <stdint.h>
 
-typedef enum {
+typedef enum
+{
     VTC_SUCCESS,
     VTC_ERROR_INTERNAL,
     VTC_ERROR_NO_MEM,
@@ -17,19 +18,21 @@ typedef enum {
     VTC_ERROR_INVALID_ADDR,
     VTC_ERROR_OFFLINE,
     VTC_HTTP_ERROR = 0x10000000,
-} err_code_t;
+} ret_code_t;
 
 /**@brief Structure containing info about an error of the type @ref NRF_FAULT_ID_SDK_ERROR.
  */
 typedef struct
 {
-    uint32_t        line_num;    /**< The line number where the error occurred. */
-    uint8_t const * p_file_name; /**< The file in which the error occurred. */
-    uint32_t        err_code;    /**< The error code representing the error that occurred. */
+    uint32_t line_num;    /**< The line number where the error occurred. */
+    uint8_t const *p_file_name; /**< The file in which the error occurred. */
+    uint32_t err_code;    /**< The error code representing the error that occurred. */
 } error_info_t;
 
-void app_error_fault_handler(uint32_t id, uint32_t pc, long info);
-void app_error_handler(err_code_t error_code, uint32_t line_num, const uint8_t * p_file_name);
+void
+app_error_fault_handler(uint32_t id, uint32_t pc, long info);
+void
+app_error_handler(ret_code_t error_code, uint32_t line_num, const uint8_t *p_file_name);
 
 /**@brief Macro for calling error handler function.
  *

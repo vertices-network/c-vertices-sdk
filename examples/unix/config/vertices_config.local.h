@@ -16,9 +16,7 @@
 #endif
 
 #ifndef SERVER_TOKEN
-#define SERVER_TOKEN "9eea51cb8b886daea688ccb71e490aff83e76c31ed0dbcbfd9028ea752369373"
+#define SERVER_TOKEN_HEADER "X-Algo-API-Token:9eea51cb8b886daea688ccb71e490aff83e76c31ed0dbcbfd9028ea752369373"
 #endif
-
-
 
 #endif //VERTICES_CONFIG_VERTICES_CONFIG_H

@@ -11,7 +11,7 @@
 
 static CURL *m_curl;
 
-err_code_t
+ret_code_t
 http_init(const provider_info_t *provider,
           size_t (*response_payload_cb)(void *, size_t, size_t, void *))
 {
@@ -23,7 +23,7 @@ http_init(const provider_info_t *provider,
         return VTC_ERROR_INTERNAL;
     }
 
-    if(provider->port != 0)
+    if (provider->port != 0)
     {
         curl_easy_setopt(m_curl, CURLOPT_PORT, provider->port);
     }
@@ -32,7 +32,7 @@ http_init(const provider_info_t *provider,
     return VTC_SUCCESS;
 }
 
-err_code_t
+ret_code_t
 http_get(const provider_info_t *provider,
          char *relative_path,
          const char *headers,
@@ -40,7 +40,7 @@ http_get(const provider_info_t *provider,
 {
     VTC_ASSERT_BOOL(m_curl != NULL);
 
-    err_code_t ret_code = VTC_SUCCESS;
+    ret_code_t err_code = VTC_SUCCESS;
     CURLcode res;
     long response_code;
 
@@ -67,7 +67,7 @@ http_get(const provider_info_t *provider,
         if (res != CURLE_OK)
         {
             LOG_ERROR("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-            ret_code = VTC_ERROR_INTERNAL;
+            err_code = VTC_ERROR_INTERNAL;
         }
         else
         {
@@ -76,7 +76,7 @@ http_get(const provider_info_t *provider,
 
             if (response_code >= 300)
             {
-                ret_code = VTC_HTTP_ERROR + response_code;
+                err_code = VTC_HTTP_ERROR + response_code;
             }
         }
 
@@ -85,38 +85,58 @@ http_get(const provider_info_t *provider,
     }
     else
     {
-        ret_code = VTC_ERROR_INVALID_STATE;
+        err_code = VTC_ERROR_INVALID_STATE;
     }
 
-    return ret_code;
+    return err_code;
 }
 
-err_code_t
-http_post(const provider_info_t *provider, char *relative_path, const char *headers, const char *body)
+ret_code_t
+http_post(const provider_info_t *provider,
+          char *relative_path,
+          char *headers,
+          const char *body,
+          size_t body_size,
+          payload_t *response_buf)
 {
     VTC_ASSERT_BOOL(m_curl != NULL);
 
-    err_code_t ret_code = VTC_SUCCESS;
+    ret_code_t err_code = VTC_SUCCESS;
     CURLcode res;
     long response_code;
 
-    char url_full[512] = {0};
+    char url_full[256] = {0};
     sprintf(url_full, "%s%s", provider->url, relative_path);
 
     if (m_curl)
     {
-        /* set our custom set of headers */
-        struct curl_slist *chunk = NULL;
-        chunk = curl_slist_append(chunk, headers);
-        curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, chunk);
-
         /* First set the URL that is about to receive our POST. This URL can
            just as well be a https:// URL if that is what should receive the
            data. */
         curl_easy_setopt(m_curl, CURLOPT_URL, url_full);
         /* Now specify the POST data */
-        curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, relative_path);
+        curl_easy_setopt(m_curl, CURLOPT_POST, 1);
+        curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, body);
+        curl_easy_setopt(m_curl, CURLOPT_POSTFIELDSIZE, body_size);
         curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L);
+
+        /* set our custom set of headers */
+        struct curl_slist *chunk = NULL;
+
+        char *header_line = headers;
+        for (size_t i = 0; headers[i] != 0; ++i)
+        {
+            if (headers[i] == '\r' && headers[i + 1] == '\n')
+            {
+                headers[i] = 0;
+                chunk = curl_slist_append(chunk, header_line);
+                header_line = &headers[i] + 2;
+            }
+        }
+        chunk = curl_slist_append(chunk, header_line);
+
+        curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, chunk);
+        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, response_buf);
 
         /* Perform the request, res will get the return code */
         res = curl_easy_perform(m_curl);
@@ -135,10 +155,10 @@ http_post(const provider_info_t *provider, char *relative_path, const char *head
     }
     else
     {
-        ret_code = VTC_ERROR_INVALID_STATE;
+        err_code = VTC_ERROR_INVALID_STATE;
     }
 
-    return ret_code;
+    return err_code;
 }
 
 void

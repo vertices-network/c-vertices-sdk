@@ -16,7 +16,7 @@
 #endif
 
 #ifndef SERVER_TOKEN
-#define SERVER_TOKEN 0
+#define SERVER_TOKEN_HEADER 0 // "x-api-key:<token>"
 #endif
 
 #if SERVER_TOKEN==0

@@ -1,9 +1,12 @@
 set(VERTICES_SRC_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/account.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/base64.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/base32.c
         ${CMAKE_CURRENT_SOURCE_DIR}/vertices_errors.c
         ${CMAKE_CURRENT_SOURCE_DIR}/vertices.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/account.c
         ${CMAKE_CURRENT_SOURCE_DIR}/http/http_curl.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/providers/algorand_provider.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/algorand/algorand_provider.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/algorand/algorand_transaction.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack/mpack-common.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack/mpack-reader.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack/mpack-platform.c
@@ -11,6 +14,8 @@ set(VERTICES_SRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack/mpack-node.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack/mpack-writer.c
         )
+
+add_definitions(-DALGORAND_PROVIDER=1)
 
 message(STATUS "Vertices SDK: ${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -21,6 +26,7 @@ target_include_directories(vertices
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../inc>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../mdk>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/cJSON>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/ed25519>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack>"
         "$<INSTALL_INTERFACE:../inc>"
         )

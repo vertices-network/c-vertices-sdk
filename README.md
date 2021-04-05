@@ -39,7 +39,7 @@ At Vertices Network, we want to free your mind from the hassle of a safe design.
 │   └── ...
 ├── lib                 # 
 │   ├── inc             # "private" header files, used within the library
-│   ├── providers       # implementations of providers. The Algorand provider is the first implemented.
+│   ├── algorand        # implementation of Vertices with Algorand. The Algorand provider is the first implemented.
 │   ├── http            # HTTP wrappers functions, GET, POST... several implementations available for several stacks (libcurl, ESP-IDF...)
 │   ├── CMakeLists.txt  # CMake of the Vertices SDK, exports a package to be imported in your project, see examples' CMakeLists
 │   └── ...             # source files

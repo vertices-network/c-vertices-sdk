@@ -8,7 +8,7 @@
 #include "vertices_types.h"
 
 #ifndef HTTP_MAXIMUM_CONTENT_LENGTH
-#define HTTP_MAXIMUM_CONTENT_LENGTH 1024
+#define HTTP_MAXIMUM_CONTENT_LENGTH 4096
 #endif
 
 typedef struct
@@ -24,14 +24,33 @@ typedef struct
     char *token;
 } http_remote_t;
 
-err_code_t
-http_init(const provider_info_t * provider, size_t (*response_payload_cb)(void *received_data, size_t size, size_t count, void *response_payload));
+ret_code_t
+http_init(const provider_info_t *provider,
+          size_t (*response_payload_cb)(void *received_data,
+                                        size_t size,
+                                        size_t count,
+                                        void *response_payload));
 
-err_code_t
-http_get(const provider_info_t * provider, char* relative_path, const char * headers, payload_t* response_buf);
+ret_code_t
+http_get(const provider_info_t *provider,
+         char *relative_path,
+         const char *headers,
+         payload_t *response_buf);
 
-err_code_t
-http_post(const provider_info_t * provider, char* relative_path, const char * headers, const char* body);
+/// Post HTTP payload
+/// \param provider
+/// \param relative_path
+/// \param headers Headers, must be separated by `\r\n`
+/// \param body
+/// \param body_size
+/// \return
+ret_code_t
+http_post(const provider_info_t *provider,
+          char *relative_path,
+          char *headers,
+          const char *body,
+          size_t body_size,
+          payload_t *response_buf);
 
 void
 http_close();
