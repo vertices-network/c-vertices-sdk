@@ -12,7 +12,7 @@ set(INC_FOLDERS
 if(APPLE)
 if(EXISTS /opt/homebrew/include AND EXISTS /opt/homebrew/lib)
 include_directories(/opt/homebrew/include/)
-link_directories(/opt/homebrew/lib)
+link_directories(/opt/homebrew/lib/)
 endif()
 elseif(UNIX)
 message("You might need to add path to libsodium (headers and library)")
