@@ -2,7 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/external/lwip" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/cJSON" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/external/mpack" vcs="Git" />
   </component>
 </project>
