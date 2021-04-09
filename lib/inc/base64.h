@@ -37,7 +37,7 @@ b64_encode(const char *input, size_t input_size, char *encoded_data, size_t *out
 /// \param input_data Pointer to string
 /// \param input_length String length, without termination character
 /// \param decoded_data Pointer to decoded data
-/// \param output_length Size of the `decoded_data` buffer. Value will be updated depending on
+/// \param output_size Size of the `decoded_data` buffer. Value will be updated depending on
 /// how many bytes are used
 /// \return error code:
 ///  - VTC_ERROR_NO_MEM if buffer not large enough to encode the input binary
@@ -46,7 +46,7 @@ ret_code_t
 b64_decode(const char *input_data,
            size_t input_length,
            char *decoded_data,
-           size_t *output_length);
+           size_t *output_size);
 
 #ifdef __cplusplus
 }

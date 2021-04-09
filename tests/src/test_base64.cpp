@@ -23,19 +23,18 @@ static void
 prv_run_encode_test_case(const char *input_str, const char *expected_out_str)
 {
     const size_t in_len = strlen(input_str);
-    size_t encode_len = BASE64_ENCODE_LEN(in_len) + 1;
+    size_t encode_len = BASE64_ENCODE_LEN(in_len);
     const size_t expected_size = encode_len;
     char result[encode_len];
     memset(result, 0xA5, sizeof(result));
 
+    LOG_DEBUG("B64 encoding - Input bin len %zu, expected str len: %zu", in_len, encode_len);
+
     ret_code_t err_code = b64_encode(input_str, in_len, result, &encode_len);
     VTC_ASSERT(err_code);
 
-    // terminate string
-    result[encode_len] = '\0';
-
-    LONGS_EQUAL(expected_size, encode_len + 1);
-    STRCMP_EQUAL(expected_out_str, result);
+    LONGS_EQUAL(expected_size, encode_len);
+    MEMCMP_EQUAL(expected_out_str, result, expected_size);
 }
 
 // Test vectors for base64 from:
@@ -92,6 +91,8 @@ prv_run_decode_test_case(const char *encoded_str, const char *expected_out_buf)
 
     char result[decode_buf_len];
     memset(result, 0x00, decode_buf_len);
+
+    LOG_DEBUG("B64 decoding - Input str len %zu, expected binary len: %zu", in_len, decode_buf_len);
 
     ret_code_t err_code = b64_decode(encoded_str, in_len, result, &decode_buf_len);
     VTC_ASSERT(err_code);

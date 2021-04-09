@@ -84,18 +84,18 @@ ret_code_t
 b64_decode(const char *input_data,
            size_t input_length,
            char *decoded_data,
-           size_t *output_length)
+           size_t *output_size)
 {
     VTC_ASSERT_BOOL(input_data != NULL);
     VTC_ASSERT_BOOL(decoded_data != NULL);
 
     if (input_length == 0)
     {
-        *output_length = 0;
+        *output_size = 0;
         return VTC_SUCCESS;
     }
 
-    if (*output_length < ((input_length / 4 * 3) - 1))
+    if (*output_size < ((input_length / 4 * 3) - 1))
     {
         return VTC_ERROR_NO_MEM;
     }
@@ -142,7 +142,7 @@ b64_decode(const char *input_data,
             (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
     }
 
-    *output_length = (size_t)bufout - (size_t)decoded_data;
+    *output_size = (size_t)bufout - (size_t)decoded_data;
 
     return VTC_SUCCESS;
 }
