@@ -6,13 +6,11 @@
 
 #include <stdint.h>
 #include <vertices_errors.h>
-#include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
 
 // based on https://opensource.apple.com/source/QuickTimeStreamingServer/QuickTimeStreamingServer-452/CommonUtilitiesLib/base64.c
 
-static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+__unused static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
                                 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
                                 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
                                 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
@@ -42,87 +40,45 @@ static const unsigned char pr2six[256] =
         64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64
     };
 
-ret_code_t
-base64_encode(const unsigned char *intput_data,
-              size_t input_length,
-              char *encoded_data,
-              size_t *data_length)
-{
-    VTC_ASSERT_BOOL(intput_data != NULL);
-    VTC_ASSERT_BOOL(*data_length >= (4 * ((input_length + 2) / 3)));
-    VTC_ASSERT_BOOL(encoded_data != NULL);
-
-    size_t wr_idx = 0;
-    for (int i = 0; i < input_length;)
-    {
-        uint32_t octet_a = i < input_length ? (unsigned char) intput_data[i++] : 0;
-        uint32_t octet_b = i < input_length ? (unsigned char) intput_data[i++] : 0;
-        uint32_t octet_c = i < input_length ? (unsigned char) intput_data[i++] : 0;
-
-        uint32_t triple = (octet_a << 0x10) + (octet_b << 0x08) + octet_c;
-
-        encoded_data[wr_idx++] = encoding_table[(triple >> 18) & 0x3F];
-        encoded_data[wr_idx++] = encoding_table[(triple >> 12) & 0x3F];
-        encoded_data[wr_idx++] = encoding_table[(triple >> 6) & 0x3F];
-        encoded_data[wr_idx++] = encoding_table[(triple >> 0) & 0x3F];
-    }
-
-    for (; wr_idx % 4 != 0; wr_idx++)
-    {
-        encoded_data[wr_idx] = '=';
-    }
-
-    *data_length = (4 * ((input_length + 2) / 3));
-
-    return VTC_SUCCESS;
+static char prv_get_char_from_word(uint32_t word, int offset) {
+    const char *base64_table =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    const uint8_t base64_mask = 0x3f; // one char per 6 bits
+    return base64_table[(word >> (offset * 6)) & base64_mask];
 }
 
 ret_code_t
-b64_encode(const char *input, size_t input_size, char *encoded, size_t *output_size)
+b64_encode(const char *input, size_t input_size, char *encoded_data, size_t *output_size)
 {
     VTC_ASSERT_BOOL(input != NULL);
-    VTC_ASSERT_BOOL(encoded != NULL);
+    VTC_ASSERT_BOOL(encoded_data != NULL);
 
     if (*output_size < (4 * ((input_size + 2) / 3)))
     {
         return VTC_ERROR_NO_MEM;
     }
 
-    int i;
-    char *p;
+    const uint8_t *bin_inp = (const uint8_t *)input;
+    char *out_bufp = (char *)encoded_data;
 
-    p = encoded;
-    for (i = 0; i < input_size - 2; i += 3)
-    {
-        *p++ = encoding_table[(input[i] >> 2) & 0x3F];
-        *p++ = encoding_table[((input[i] & 0x3) << 4) |
-            ((int) (input[i + 1] & 0xF0) >> 4)];
-        *p++ = encoding_table[((input[i + 1] & 0xF) << 2) |
-            ((int) (input[i + 2] & 0xC0) >> 6)];
-        *p++ = encoding_table[input[i + 2] & 0x3F];
-    }
-    if (i < input_size)
-    {
-        *p++ = encoding_table[(input[i] >> 2) & 0x3F];
-        if (i == (input_size - 1))
-        {
-            *p++ = encoding_table[((input[i] & 0x3) << 4)];
-            *p++ = '=';
-        }
-        else
-        {
-            *p++ = encoding_table[((input[i] & 0x3) << 4) |
-                ((int) (input[i + 1] & 0xF0) >> 4)];
-            *p++ = encoding_table[((input[i + 1] & 0xF) << 2)];
-        }
-        *p++ = '=';
+    int curr_idx = 0;
+
+    for (size_t bin_idx = 0; bin_idx < input_size;  bin_idx += 3) {
+        const uint32_t byte0 = bin_inp[bin_idx];
+        const uint32_t byte1 = ((bin_idx + 1) < input_size) ? bin_inp[bin_idx + 1] : 0;
+        const uint32_t byte2 = ((bin_idx + 2) < input_size) ? bin_inp[bin_idx + 2] : 0;
+        const uint32_t triple = (byte0 << 16) + (byte1 << 8) + byte2;
+
+        out_bufp[curr_idx++] = prv_get_char_from_word(triple, 3);
+        out_bufp[curr_idx++] = prv_get_char_from_word(triple, 2);
+        out_bufp[curr_idx++] = ((bin_idx + 1) < input_size) ? prv_get_char_from_word(triple, 1) : '=';
+        out_bufp[curr_idx++] = ((bin_idx + 2) < input_size) ? prv_get_char_from_word(triple, 0) : '=';
     }
 
-    *output_size = (size_t) (p - encoded);
-    *p++ = '\0';
+    *output_size = (size_t) curr_idx;
 
     return VTC_SUCCESS;
-};
+}
 
 ret_code_t
 b64_decode(const char *input_data,
@@ -132,6 +88,12 @@ b64_decode(const char *input_data,
 {
     VTC_ASSERT_BOOL(input_data != NULL);
     VTC_ASSERT_BOOL(decoded_data != NULL);
+
+    if (input_length == 0)
+    {
+        *output_length = 0;
+        return VTC_SUCCESS;
+    }
 
     if (*output_length < ((input_length / 4 * 3) - 1))
     {
@@ -145,7 +107,7 @@ b64_decode(const char *input_data,
 
     bufin = (const unsigned char *) input_data;
     while (pr2six[*(bufin++)] <= 63);
-    nprbytes = (bufin - (const unsigned char *) input_data) - 1;
+    nprbytes = (size_t) (bufin - (const unsigned char *) input_data) - 1;
     nbytesdecoded = ((nprbytes + 3) / 4) * 3;
 
     bufout = (unsigned char *) decoded_data;
@@ -180,8 +142,7 @@ b64_decode(const char *input_data,
             (unsigned char) (pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
     }
 
-    nbytesdecoded -= (4 - nprbytes) & 3;
-    *output_length = nbytesdecoded;
+    *output_length = (size_t)bufout - (size_t)decoded_data;
 
     return VTC_SUCCESS;
 }

@@ -5,7 +5,6 @@
 #ifndef VERTICES_EXAMPLES_UNIX_INC_VTC_LOG_H
 #define VERTICES_EXAMPLES_UNIX_INC_VTC_LOG_H
 
-#if (__unix__ || __APPLE__)
 
 #include <printf.h>
 
@@ -70,8 +69,6 @@
 #else
 
 #define LOG_ERROR(...)
-
-#endif
 
 #endif
 
