@@ -15,9 +15,9 @@ static account_details_t m_accounts[ACCOUNTS_MAXIMUM_COUNT] = {0};
 static ret_code_t
 from_b32_init(account_info_t *account)
 {
-    uint8_t result[36] = {0};
+    char result[36] = {0};
     size_t result_size = sizeof result;
-    base32_decode((const uint8_t *) account->public, result, sizeof(result), &result_size);
+    b32_decode(account->public, result, &result_size);
 
     // todo verify checksum
 

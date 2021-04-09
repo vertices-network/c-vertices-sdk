@@ -53,6 +53,9 @@ $(TEST_MAKEFILES):
 base64:
 	$(MAKE) -f makefiles/Makefile_$@.mk $(CPPUTEST_BUILD_RULE)
 
+base32:
+	$(MAKE) -f makefiles/Makefile_$@.mk $(CPPUTEST_BUILD_RULE)
+
 clean:
 	rm -rf $(BUILD_DIR)
 
