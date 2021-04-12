@@ -56,6 +56,8 @@ This repository is intended to be used as an external component to your project 
 ```shell
 # clone into a directory
 git clone <url> [path]
+# clone into a directory including its submodules
+git clone --recurse-submodules <url> [path]
 # clone as submodule into an optionally specified location
 git submodule add <url> [path]
 ```
