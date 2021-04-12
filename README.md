@@ -106,7 +106,7 @@ The example running on Unix is ready to be tested, [checkout the Readme](example
 Make sure you have `cpputest` installed:
 
 - Linux - `sudo apt-get install cpputest lcov`
-- OSX - `brew install cpputest && brew install lcov`
+- OSX - `brew install cpputest lcov`
 
 From [`/tests`](/tests) you will be able to launch the unique command to run all the tests:
 

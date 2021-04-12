@@ -3,7 +3,7 @@
 ## Setup
 
 - Linux - `sudo apt-get install cpputest lcov`
-- OSX - `brew install cpputest && brew install lcov`
+- OSX - `brew install cpputest lcov`
 
 ## Running tests
 
