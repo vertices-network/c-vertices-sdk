@@ -11,7 +11,7 @@
 #include "provider.h"
 #include "cJSON.h"
 
-#ifndef ALGORAND_PROVIDER
+#if BLOCKCHAIN_PROVIDER != algorand
 #error "You are trying to compile Vertices for the Algorand blockchain but you haven't specified a Blockchain provider."
 #endif
 

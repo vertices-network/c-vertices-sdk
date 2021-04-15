@@ -1,3 +1,8 @@
+message(STATUS "Vertices SDK location: ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "Vertices SDK provider: $ENV{BLOCKCHAIN_PROVIDER}")
+
+add_definitions(-DBLOCKCHAIN_PROVIDER=$ENV{BLOCKCHAIN_PROVIDER})
+
 set(VERTICES_SRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/account.c
         ${CMAKE_CURRENT_SOURCE_DIR}/base64.c
@@ -5,8 +10,8 @@ set(VERTICES_SRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/vertices_errors.c
         ${CMAKE_CURRENT_SOURCE_DIR}/vertices.c
         ${CMAKE_CURRENT_SOURCE_DIR}/http/http_curl.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/algorand/algorand_provider.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/algorand/algorand_transaction.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/$ENV{BLOCKCHAIN_PROVIDER}/$ENV{BLOCKCHAIN_PROVIDER}_provider.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/$ENV{BLOCKCHAIN_PROVIDER}/$ENV{BLOCKCHAIN_PROVIDER}_transaction.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack/mpack-common.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack/mpack-reader.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack/mpack-platform.c
@@ -14,10 +19,6 @@ set(VERTICES_SRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack/mpack-node.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack/mpack-writer.c
         )
-
-add_definitions(-DALGORAND_PROVIDER=1)
-
-message(STATUS "Vertices SDK: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_library(vertices STATIC ${VERTICES_SRC_FILES})
 target_include_directories(vertices

@@ -18,7 +18,14 @@ elseif(UNIX)
 message("You might need to add path to libsodium (headers and library)")
 endif()
 
-set(CFLAGS -DALGORAND_PROVIDER=1 )
+# check that BLOCKCHAIN_PROVIDER variable is set, default to `algorand`
+if(DEFINED $ENV{BLOCKCHAIN_PROVIDER})
+    message(STATUS "Using blockchain: $ENV{BLOCKCHAIN_PROVIDER}")
+else()
+    set(ENV{BLOCKCHAIN_PROVIDER} algorand)
+    message(STATUS "Default blockchain: $ENV{BLOCKCHAIN_PROVIDER}")
+endif()
+
 add_definitions(-DCONFIG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/config/")
 
 find_package(CURL)
