@@ -9,7 +9,7 @@ We are doing our best to achieve those goals:
 - C library, can be included into C++ projects.
 - Can be easily imported into any project
 - Examples that will be provided:
-  - Unix-based OSes
+  - [Unix-based OSes](examples/unix)
   - ESP-IDF
   - Zephyr
 - Connect to any Algorand API `algod` (local or remote provider)
@@ -43,7 +43,7 @@ At Vertices Network, we want to free your mind from the hassle of a safe design.
 │   ├── http            # HTTP wrappers functions, GET, POST... several implementations available for several stacks (libcurl, ESP-IDF...)
 │   ├── CMakeLists.txt  # CMake of the Vertices SDK, exports a package to be imported in your project, see examples' CMakeLists
 │   └── ...             # source files
-├── mdk                 # the SDK is running on several architecture, we need some compiler abstraction
+├── mdk                 # the SDK is running on several architecture, those files provide some compiler abstraction
 │   └── compilers.h
 └── utils               # tools to make things easier, clearer, smarter :) 
     └── utils.cmake
@@ -70,12 +70,7 @@ It is advised to copy that config file into your project if you want to track it
 
 ### Compilation
 
-There are currently two build systems supported:
-
-* CMake
-* GNU Make
-
-Those are providing the static library: `libvertices.a`.
+CMake is currently used to build the library and examples (GNU Make is on the roadmap).
 
 #### CMake
 
@@ -84,7 +79,12 @@ In order to build the source using CMake in a separate directory (recommended), 
 ```shell
 mkdir /path/to/build_dir && cd /path/to/build_dir
 cmake /path/to/mbedtls_source
-make
+
+# build static library: lib/libvertices.a
+make vertices
+
+# build Unix example
+make unix_example
 ```
 
 #### Make
@@ -95,7 +95,7 @@ make
 
 👉 More to come about how to import the package into your build system.
 
-> 💡 Vertices will provide [examples](examples/) with various major SDKs, such as the ESP-IDF for Espressif microcontrollers. You can probably copy-paste our source code into your project 🙂.
+> 💡 Vertices is providing [examples](examples/) with various major SDKs, such as the ESP-IDF for Espressif microcontrollers. You can probably copy-paste our source code into your project 🙂.
 
 ### Examples
 
