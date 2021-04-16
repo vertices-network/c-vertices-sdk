@@ -69,7 +69,7 @@ Using Conda is a great way to isolate the development environment ([more about C
 We are providing an [environment file](utils/environment.yml) to be installed:
 
 ```shell
-conda env create -n vertices -f utils/environment.yml
+conda env create -f utils/environment.yml
 conda activate vertices
 ```
 
@@ -77,7 +77,7 @@ The Conda environment will be updated accordingly to the source code if a new de
 Once you have checked-out the repo at a different commit, make sure to update your environment to use the right dependencies:
 
 ```shell
-conda env update -f environment.yml
+conda env update -f utils/environment.yml
 ```
 
 🔜 We might also provide a Docker container once we have set up CI/CD.
@@ -96,8 +96,8 @@ CMake is currently used to build the library and examples (GNU Make is on the ro
 In order to build the source using CMake in a separate directory (recommended), just enter at the command line:
 
 ```shell
-mkdir /path/to/build_dir && cd /path/to/build_dir
-cmake /path/to/mbedtls_source
+mkdir build && cd build
+cmake ..
 
 # build static library: lib/libvertices.a
 make vertices

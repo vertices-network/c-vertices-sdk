@@ -18,7 +18,7 @@ Obviously, those elements are provided in the example. In order to have the exam
 
 ## Installation
 
-First, the dependencies...
+If you are using the Conda [environment](../../utils/environment.yml), you can skip that step and continue to [compile](#compile).
 
 #### macOS
 
@@ -56,7 +56,7 @@ The compiled program is located at `/path/to/build_dir/examples/unix/unix_exampl
 ## Run
 
 The first time you launch the example, you might want to generate a new account that will then be used. 
-Use the flag `-n` to allow `unix_example` to generate a new account. You will then be asked to put money you the 
+Use the flag `-n` to allow `unix_example` to generate a new account. You will then be asked into put money to the 
 account in order to execute new transactions.
 
 ```shell
