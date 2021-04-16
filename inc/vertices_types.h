@@ -10,10 +10,11 @@
 #define xstr(s) str(s.h)
 #define str(s) #s
 
-#define ADDRESS_LENGTH          32
-#define HASH_LENGTH             32
-#define TX_PAYLOAD_MAX_LENGTH   512
-#define SIGNATURE_LENGTH        64
+#define ADDRESS_LENGTH              32
+#define HASH_LENGTH                 32
+#define TX_PAYLOAD_MAX_LENGTH       512
+#define SIGNATURE_LENGTH            64
+#define PUBLIC_B32_STR_MAX_LENGTH   65
 
 /// Asynchronous operations can be handled using Vertices events types
 typedef enum
@@ -39,7 +40,7 @@ typedef struct
 
 typedef struct
 {
-    char *public; // b64 public address
+    char public[PUBLIC_B32_STR_MAX_LENGTH]; // b64 public address, with \0
     unsigned char private_key[ADDRESS_LENGTH]; // 32-bytes private key
     unsigned char public_key[ADDRESS_LENGTH]; // 32-bytes public key
     int32_t amount; // micro-Algos on account
