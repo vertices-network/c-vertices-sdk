@@ -36,9 +36,9 @@ vertices_del_account(size_t account_handle)
 }
 
 ret_code_t
-vertices_transaction_pay_new(size_t account_id, char *receiver, uint64_t amount)
+vertices_transaction_pay_new(size_t account_id, char *receiver, uint64_t amount, void * params)
 {
-    return transaction_pay(account_id, receiver, amount);
+    return transaction_pay(account_id, receiver, amount, params);
 }
 
 ret_code_t
@@ -58,7 +58,7 @@ vertices_event_process(vtc_evt_t *evt)
         case VTC_EVT_TX_READY_TO_SIGN:break;
         case VTC_EVT_TX_READY_TO_SEND:
         {
-            err_code = transaction_pending_send(evt->bufid);
+            transaction_pending_send(evt->bufid);
         }
             break;
         case VTC_EVT_TX_SUCCESS:
@@ -73,7 +73,7 @@ vertices_event_process(vtc_evt_t *evt)
     // now let's have the user handle the event
     if (err_code == VTC_SUCCESS && m_vertices_evt_handler != NULL)
     {
-        m_vertices_evt_handler(evt);
+        err_code = m_vertices_evt_handler(evt);
     }
 
     return err_code;

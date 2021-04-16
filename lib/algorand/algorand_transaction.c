@@ -90,7 +90,14 @@ encode_tx_pay(transaction_t *tx, size_t bufid)
     // from there, the payload is part of the signature we store the offset location
     m_pending_tx[bufid].payload_offset = (size_t) (writer.current - writer.buffer);
 
-    mpack_start_map(&writer, 9);
+    // minimum is 9 fields, add some depending on `tx`
+    uint32_t count = 9;
+    if (tx->details->note != NULL)
+    {
+        count += 1;
+    }
+
+    mpack_start_map(&writer, count);
     mpack_write_cstr(&writer, "amt");
     mpack_write_uint(&writer, tx->details->payment_tx.amount);
 
@@ -111,6 +118,13 @@ encode_tx_pay(transaction_t *tx, size_t bufid)
     mpack_write_bin(&writer, (const char *) tx->genesis_hash, sizeof tx->genesis_hash);
     mpack_write_cstr(&writer, "lv");
     mpack_write_uint(&writer, tx->details->last_valid);
+
+    if (tx->details->note != NULL)
+    {
+        mpack_write_cstr(&writer, "note");
+        mpack_write_bin(&writer, tx->details->note, strlen(tx->details->note));
+    }
+
     mpack_write_cstr(&writer, "rcv");
     mpack_write_bin(&writer,
                     (const char *) tx->details->payment_tx.receiver,
@@ -172,13 +186,25 @@ encode_tx(transaction_t *tx)
 }
 
 ret_code_t
-transaction_pay(size_t account_id, char *receiver, uint64_t amount)
+transaction_pay(size_t account_id, char *receiver, uint64_t amount, void * params)
 {
     ret_code_t err_code = VTC_SUCCESS;
 
     if (m_pending_tx[wr_idx].payload_length != 0)
     {
         return VTC_ERROR_NO_MEM;
+    }
+
+    // check params is correct (must be less than 1000 bytes)
+    if (params != NULL)
+    {
+        if (strlen(params) > OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES)
+        {
+            // consider using more bytes for each transaction by setting a larger value to
+            // OPTIONAL_TX_FIELDS_MAX_SIZE
+            LOG_ERROR("Unable to store params");
+            return VTC_ERROR_INVALID_PARAM;
+        }
     }
 
     m_pending_tx[wr_idx].payload_length = sizeof m_pending_tx[wr_idx].payload;
@@ -198,6 +224,7 @@ transaction_pay(size_t account_id, char *receiver, uint64_t amount)
 
     tx_full.fee = TX_DEFAULT_FEE;
     tx_full.details->tx_type = ALGORAND_PAYMENT_TRANSACTION;
+    tx_full.details->note = (char *) params;
 
     tx_full.details->payment_tx.amount = amount;
 
@@ -222,7 +249,7 @@ transaction_pay(size_t account_id, char *receiver, uint64_t amount)
     wr_idx = (wr_idx + 1) % PENDING_TX_COUNT;
 
     // push event for asynchronous operation
-    vertices_event_process(&evt);
+    err_code = vertices_event_process(&evt);
 
     return err_code;
 }

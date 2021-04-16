@@ -25,8 +25,14 @@ vertices_add_account(account_info_t *account, size_t *account_id);
 ret_code_t
 vertices_del_account(size_t account_handle);
 
+/// Send tokens
+/// \param account_id Handle to the Sender account
+/// \param receiver Receiver account
+/// \param amount Amount of token to be sent
+/// \param params Pointer to type, where type is known by blockchain implementation
+/// \return \c VTC_ERROR_INVALID_PARAM if one parameter is incorrect
 ret_code_t
-vertices_transaction_pay_new(size_t account_id, char *receiver, uint64_t amount);
+vertices_transaction_pay_new(size_t account_id, char *receiver, uint64_t amount, void * params);
 
 ret_code_t
 vertices_transaction_get(size_t bufid, signed_transaction_t **tx);

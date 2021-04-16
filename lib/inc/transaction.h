@@ -8,10 +8,15 @@
 #include <vertices_errors.h>
 #include <vertices_types.h>
 
-// include Blockchain-specific types
-#include xstr(BLOCKCHAIN_PROVIDER)
+#define header_xstr(s) str(s.h)
+#define str(s) #s
 
-#ifndef BLOCKCHAIN_PROVIDER
+#ifdef BLOCKCHAIN_PROVIDER
+
+// include Blockchain-specific types
+#include header_xstr(BLOCKCHAIN_PROVIDER)
+
+#else
 
 // Generic implementation
 
@@ -40,7 +45,7 @@ typedef struct
 } transaction_t;
 
 ret_code_t
-transaction_pay(size_t account_id, char *receiver, uint64_t amount);
+transaction_pay(size_t account_id, char *receiver, uint64_t amount, void * params);
 
 ret_code_t
 transaction_get(size_t bufid, signed_transaction_t **tx);

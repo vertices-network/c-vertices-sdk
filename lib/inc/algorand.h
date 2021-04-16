@@ -32,6 +32,7 @@ typedef struct
     uint64_t
         last_valid; ///< The ending round for which the transaction is valid. After this round, the transaction will be rejected by the network.
     tx_type_t tx_type; ///< Specifies the type of transaction.
+    char * note; ///< (opt) Any data up to 1000 bytes.
     union
     {
         payment_tx_t payment_tx;

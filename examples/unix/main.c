@@ -4,13 +4,13 @@
 
 #include "vertices.h"
 #include <vertices_log.h>
-#include <vertices_config.h>
-#include <base64.h>
+#include <unix_config.h>
 #include <string.h>
 #include <sodium.h>
 #include <getopt.h>
 #include <stdbool.h>
 #include <base32.h>
+#include <base64.h>
 #include <sha512_256.h>
 
 #define ACCOUNT_NUMBER 2
@@ -22,7 +22,8 @@ static provider_info_t providers =
     {.url = SERVER_URL, .port = SERVER_PORT, .header = SERVER_TOKEN_HEADER};
 
 static account_info_t accounts[ACCOUNT_NUMBER] = {
-    {.public = {0}, .private_key = {0}, .amount = 0}, // this account is used to send data, private key is taken from config/private_key.bin
+    {.public = {0}, .private_key = {
+        0}, .amount = 0}, // this account is used to send data, private key is taken from config/private_key.bin
     {.public = "27J56E73WOFSEQUECLRCLRNBV3D74H7BYB7USEXCJOYPLBTACULABWMLVU", .private_key = {
         0}, .amount = 0}, // this account is the receiver
 };
@@ -71,7 +72,7 @@ vertices_evt_handler(vtc_evt_t *evt)
                 LOG_DEBUG("Signature %s (%zu bytes)", b64_signature, b64_signature_len);
 
                 evt->type = VTC_EVT_TX_READY_TO_SEND;
-                vertices_event_process(evt);
+                err_code = vertices_event_process(evt);
             }
         }
             break;
@@ -82,7 +83,7 @@ vertices_evt_handler(vtc_evt_t *evt)
             signed_transaction_t *tx = NULL;
             err_code = vertices_transaction_get(evt->bufid, &tx);
 
-            FILE *fstx = fopen(VERTICES_ROOT "signed_tx.bin", "wb");
+            FILE *fstx = fopen(CONFIG_PATH "../signed_tx.bin", "wb");
 
             if (fstx == NULL)
             {
@@ -92,7 +93,7 @@ vertices_evt_handler(vtc_evt_t *evt)
             fwrite(tx->payload, tx->payload_offset + tx->payload_length, 1, fstx);
             fclose(fstx);
 
-            FILE *ftx = fopen(VERTICES_ROOT "tx.bin", "wb");
+            FILE *ftx = fopen(CONFIG_PATH "../tx.bin", "wb");
 
             if (ftx == NULL)
             {
@@ -165,7 +166,8 @@ source_keys(bool create_new)
     }
     else if (f == NULL || bytes_read != 64)
     {
-        LOG_WARNING("🤔 private_key.bin does not exist or keys not found. You can pass the -n flag to create a new account");
+        LOG_WARNING(
+            "🤔 private_key.bin does not exist or keys not found. You can pass the -n flag to create a new account");
 
         return VTC_ERROR_NOT_FOUND;
     }
@@ -177,7 +179,7 @@ source_keys(bool create_new)
     err_code = sha512_256(accounts[0].public_key, sizeof(accounts[0].public_key), checksum);
     VTC_ASSERT(err_code);
 
-    memcpy(&public_key_checksum[32], &checksum[32-4], 4);
+    memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);
 
     size_t size = 58;
     memset(accounts[0].public, 0, sizeof(accounts[0].public)); // make sure init to zeros (string)
@@ -260,15 +262,21 @@ main(int argc, char *argv[])
 
     if (accounts[0].amount < 2000)
     {
-        LOG_ERROR("🙄 Amount available on account is too low to pass a transaction, consider adding Algos");
-        LOG_INFO("👉 Go to https://bank.testnet.algorand.network/, send money to: %s", accounts[0].public);
+        LOG_ERROR(
+            "🙄 Amount available on account is too low to pass a transaction, consider adding Algos");
+        LOG_INFO("👉 Go to https://bank.testnet.algorand.network/, send money to: %s",
+                 accounts[0].public);
         LOG_INFO("😎 Then wait for a few seconds for transaction to pass...");
         return 0;
     }
 
     // send assets from account 0 to account 1
+    char *notes = "Vertices.network is live";
     err_code =
-        vertices_transaction_pay_new(account_handle_sender, (char *) accounts[1].public_key, 1000);
+        vertices_transaction_pay_new(account_handle_sender,
+                                     (char *) accounts[1].public_key,
+                                     1000,
+                                     notes);
     VTC_ASSERT(err_code);
 
     LOG_INFO("💸 Sent TX");

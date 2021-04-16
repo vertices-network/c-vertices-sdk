@@ -5,8 +5,11 @@
 #ifndef VERTICES_CONFIG_VERTICES_CONFIG_H
 #define VERTICES_CONFIG_VERTICES_CONFIG_H
 
+#define TESTNET_PURESTAKE_API   "https://testnet-algorand.api.purestake.io/ps2"
+#define TESTNET_LOCAL_API       "localhost"
+
 #ifndef SERVER_URL
-#define SERVER_URL "localhost"
+#define SERVER_URL TESTNET_LOCAL_API
 #endif
 
 /// Port to be used when communicating with the remote API

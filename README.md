@@ -85,9 +85,7 @@ conda env update -f environment.yml
 
 ### Configuration
 
-A config file provides an easy way to configure the SDK: [`config/vertices_config.h`](examples/unix/config/vertices_config.h). The file is fully documented.
-
-It is advised to copy that config file into your project if you want to track it with your Version Control System.
+A config file provides an easy way to configure the SDK: [`inc/vertices_config.h`](inc/vertices_config.h). The file is fully documented.
 
 ### Compilation
 

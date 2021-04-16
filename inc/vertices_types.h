@@ -5,14 +5,16 @@
 #ifndef VERTICES_SDK_LIB_INC_VERTICES_TYPES_H
 #define VERTICES_SDK_LIB_INC_VERTICES_TYPES_H
 
+#include "vertices_config.h"
 #include "vertices_errors.h"
 
-#define xstr(s) str(s.h)
-#define str(s) #s
+#ifndef OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES
+#define OPTIONAL_TX_FIELDS_MAX_SIZE 0
+#endif
 
 #define ADDRESS_LENGTH              32
 #define HASH_LENGTH                 32
-#define TX_PAYLOAD_MAX_LENGTH       512
+#define TX_PAYLOAD_MAX_LENGTH       (512+OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES)
 #define SIGNATURE_LENGTH            64
 #define PUBLIC_B32_STR_MAX_LENGTH   65
 
