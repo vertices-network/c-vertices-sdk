@@ -134,7 +134,7 @@ source_keys(bool create_new)
     size_t bytes_read = 0;
     if (f != NULL)
     {
-        LOG_INFO("Loading private key from: %s", CONFIG_PATH "private_key.bin");
+        LOG_INFO("🔑 Loading private key from: %s", CONFIG_PATH "private_key.bin");
 
         bytes_read = fread(accounts[0].private_key, 1, 64, f);
         fclose(f);
@@ -142,7 +142,7 @@ source_keys(bool create_new)
 
     if (create_new)
     {
-        LOG_WARNING("Creating new random account and storing it (path " CONFIG_PATH ")");
+        LOG_WARNING("🧾 Creating new random account and storing it (path " CONFIG_PATH ")");
 
         unsigned char ed25519_sk[crypto_sign_ed25519_SECRETKEYBYTES];
         randombytes_buf(seed, sizeof(seed));
@@ -189,7 +189,7 @@ source_keys(bool create_new)
                           &size);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("Sender account %s", accounts[0].public);
+    LOG_INFO("💳 Sender account %s", accounts[0].public);
 
     return VTC_SUCCESS;
 }
@@ -279,7 +279,7 @@ main(int argc, char *argv[])
                                      notes);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("💸 Sent TX");
+    LOG_INFO("💸 Transaction executed!");
 
     // delete the created account from the Vertices wallet
     err_code = vertices_del_account(account_handle_sender);
