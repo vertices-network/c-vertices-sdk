@@ -57,6 +57,10 @@ parse_account_field(mpack_reader_t *reader, const char *field, account_details_t
     {
         account->reward_base = (int32_t) mpack_tag_uint_value(&value);
     }
+    else if (strncmp(field, "ern", sizeof "ern" - 1) == 0)
+    {
+        account->rewards = (int32_t) mpack_tag_uint_value(&value);
+    }
     else
     {
         err_code = VTC_ERROR_NOT_FOUND;
