@@ -12,8 +12,10 @@ set(CMAKE_MACOSX_RPATH 1)
 
 message(STATUS "💎 Loading targets")
 
-add_subdirectory(examples/unix)
+# Set blockchain
+set(ENV{BLOCKCHAIN_PROVIDER} algorand)
 
+add_subdirectory(examples/unix)
 add_subdirectory(external/cJSON)
 add_subdirectory(external/mbedtls)
 add_subdirectory(lib)

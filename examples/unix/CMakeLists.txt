@@ -19,7 +19,7 @@ message("You might need to add path to libsodium (headers and library)")
 endif()
 
 # check that BLOCKCHAIN_PROVIDER variable is set, default to `algorand`
-if(DEFINED $ENV{BLOCKCHAIN_PROVIDER})
+if(DEFINED ENV{BLOCKCHAIN_PROVIDER})
     message(STATUS "Using blockchain: $ENV{BLOCKCHAIN_PROVIDER}")
 else()
     set(ENV{BLOCKCHAIN_PROVIDER} algorand)
