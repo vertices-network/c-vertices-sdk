@@ -7,6 +7,7 @@ set(VERTICES_SRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/account.c
         ${CMAKE_CURRENT_SOURCE_DIR}/base64.c
         ${CMAKE_CURRENT_SOURCE_DIR}/base32.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/sha512_256.c
         ${CMAKE_CURRENT_SOURCE_DIR}/vertices_errors.c
         ${CMAKE_CURRENT_SOURCE_DIR}/vertices.c
         ${CMAKE_CURRENT_SOURCE_DIR}/http/http_curl.c
@@ -21,12 +22,14 @@ set(VERTICES_SRC_FILES
         )
 
 add_library(vertices STATIC ${VERTICES_SRC_FILES})
+
 target_include_directories(vertices
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../inc>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../mdk>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/cJSON>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/mbedtls/library>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/ed25519>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack>"
         "$<INSTALL_INTERFACE:../inc>"
@@ -49,4 +52,4 @@ install(EXPORT verticesTargets
         DESTINATION lib/cmake/vertices
         )
 
-target_link_libraries(vertices cjson)
+target_link_libraries(vertices cjson mbedcrypto)

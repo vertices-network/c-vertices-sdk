@@ -8,7 +8,7 @@ CPPUTEST_HOME ?= /usr
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 CURRENT_DIR := $(dir $(MKFILE_PATH))
 
-LD_LIBRARIES = -L$(CPPUTEST_HOME)/$(TARGET_PLATFORM)lib -lCppUTest -lCppUTestExt
+LD_LIBRARIES += -L$(CPPUTEST_HOME)/$(TARGET_PLATFORM)lib -lCppUTest -lCppUTestExt
 
 TEST_SRC_FILES += \
   $(TEST_COMMON_SRC_DIR)/AllTests.cpp

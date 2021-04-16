@@ -25,7 +25,8 @@ export CPPUTEST_MAKFILE_INFRA := $(TEST_ROOT)/MakefileWorkerOverrides.mk
 VTC_ALL_INCLUDE_DIRS := \
   $(VTC_LIB_DIR)/inc \
   $(PROJECT_DIR)/inc \
-  $(PROJECT_DIR)/mdk
+  $(PROJECT_DIR)/mdk \
+  $(PROJECT_DIR)/external/mbedtls/include
 
 VTC_ALL_SRC_DIRS := \
 	$(wildcard $(VTC_LIB_DIR)/*) \
@@ -47,13 +48,19 @@ lcov: $(TEST_MAKEFILES)
 	lcov --base-directory . --directory . -c -o $(LCOV_INFO_FILE) --exclude "*cpputest/*" --exclude "*tests/*"
 	genhtml -o test_coverage -t "coverage" --num-spaces 4 $(LCOV_INFO_FILE) -o $(BUILD_DIR)/test_coverage/
 
-$(TEST_MAKEFILES):
+mbded_library:
+	make -C $(PROJECT_ROOT_DIR)/external/mbedtls/library static
+
+$(TEST_MAKEFILES): mbded_library
 	$(MAKE) -f $@ $(CPPUTEST_BUILD_RULE)
 
 base64:
 	$(MAKE) -f makefiles/Makefile_$@.mk $(CPPUTEST_BUILD_RULE)
 
 base32:
+	$(MAKE) -f makefiles/Makefile_$@.mk $(CPPUTEST_BUILD_RULE)
+
+sha512_256: mbded_library
 	$(MAKE) -f makefiles/Makefile_$@.mk $(CPPUTEST_BUILD_RULE)
 
 clean:

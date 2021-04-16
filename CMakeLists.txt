@@ -15,4 +15,5 @@ message(STATUS "💎 Loading targets")
 add_subdirectory(examples/unix)
 
 add_subdirectory(external/cJSON)
+add_subdirectory(external/mbedtls)
 add_subdirectory(lib)
