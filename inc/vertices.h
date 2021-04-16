@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include "vertices_types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 ret_code_t
 vertices_version(provider_version_t *version);
 
@@ -41,5 +45,9 @@ vertices_event_process(vtc_evt_t *evt);
 /// * VTC_ERROR_INTERNAL if HTTP client cannot be initialized
 ret_code_t
 vertices_new(vertex_t *config);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //VERTICES_SRC_VERTICE_H
