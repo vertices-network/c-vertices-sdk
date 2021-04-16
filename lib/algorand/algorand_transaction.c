@@ -241,6 +241,20 @@ transaction_get(size_t bufid, signed_transaction_t **tx)
 }
 
 ret_code_t
+transaction_free(size_t bufid)
+{
+    if (m_pending_tx[bufid].payload_length == 0)
+    {
+        return VTC_ERROR_INVALID_PARAM;
+    }
+
+    memset(&m_pending_tx[bufid], 0, sizeof(signed_transaction_t));
+
+    return VTC_SUCCESS;
+}
+
+
+ret_code_t
 transaction_pending_send(size_t bufid)
 {
     if (m_pending_tx[bufid].payload_length == 0)
@@ -259,10 +273,13 @@ transaction_pending_send(size_t bufid)
                                 payload_len);
 
     // transaction has been executed, free up spot
-//    if (err_code == VTC_SUCCESS)
-//    {
-//        memset(&m_pending_tx[bufid], 0, sizeof(m_pending_tx[bufid]));
-//    }
+    if (err_code == VTC_SUCCESS)
+    {
+        vtc_evt_t evt = {.type = VTC_EVT_TX_SUCCESS, .bufid = wr_idx};
+
+        // push event for asynchronous operation
+        vertices_event_process(&evt);
+    }
 
     return err_code;
 }

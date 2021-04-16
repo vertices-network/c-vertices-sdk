@@ -21,6 +21,7 @@ typedef enum
 {
     VTC_EVT_TX_READY_TO_SIGN = 0,
     VTC_EVT_TX_READY_TO_SEND,
+    VTC_EVT_TX_SUCCESS,
 } vtc_evt_type_t;
 
 /// Events contains a type and a bufid. When implementing the event handler, the `bufid`

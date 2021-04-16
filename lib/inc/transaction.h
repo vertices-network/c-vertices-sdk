@@ -48,4 +48,7 @@ transaction_get(size_t bufid, signed_transaction_t **tx);
 ret_code_t
 transaction_pending_send(size_t bufid);
 
+ret_code_t
+transaction_free(size_t bufid);
+
 #endif //VERTICES_INC_TRANSACTION_H

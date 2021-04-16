@@ -5,6 +5,7 @@
 #include <provider.h>
 #include <account.h>
 #include <transaction.h>
+#include <vertices_log.h>
 #include "vertices.h"
 
 static ret_code_t
@@ -60,6 +61,13 @@ vertices_event_process(vtc_evt_t *evt)
             err_code = transaction_pending_send(evt->bufid);
         }
             break;
+        case VTC_EVT_TX_SUCCESS:
+        {
+            err_code = transaction_free(evt->bufid);
+        }
+        break;
+        default:
+            LOG_ERROR("Unhandled event type: %u", evt->type);
     }
 
     // now let's have the user handle the event
