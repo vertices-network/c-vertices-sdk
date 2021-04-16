@@ -118,7 +118,10 @@ http_post(const provider_info_t *provider,
         curl_easy_setopt(m_curl, CURLOPT_POST, 1);
         curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, body);
         curl_easy_setopt(m_curl, CURLOPT_POSTFIELDSIZE, body_size);
+
+#ifdef DEBUG
         curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L);
+#endif
 
         /* set our custom set of headers */
         struct curl_slist *chunk = NULL;
