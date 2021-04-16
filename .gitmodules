@@ -4,3 +4,6 @@
 [submodule "external/cJSON"]
 	path = external/cJSON
 	url = git@github.com:DaveGamble/cJSON.git
+[submodule "external/mbedtls"]
+	path = external/mbedtls
+	url = https://github.com/ARMmbed/mbedtls
