@@ -46,10 +46,4 @@ install(TARGETS vertices
         INCLUDES DESTINATION inc
         )
 
-install(EXPORT verticesTargets
-        FILE verticesTargets.cmake
-        NAMESPACE Vertices::
-        DESTINATION lib/cmake/vertices
-        )
-
 target_link_libraries(vertices cjson mbedcrypto)
