@@ -5,6 +5,8 @@ dependencies:
   - python=3.8
   - cmake
   - ninja
+  - libcurl # For Unix example
+  - libsodium # For Unix example
   - pyserial
   - ccache
   - dfu-util
