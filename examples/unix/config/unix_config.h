@@ -28,17 +28,32 @@
 #define  TESTNET_ALGOEXPLORER_API_TOKEN    ""
 
 #if API_PROVIDER==PURESTAKE
-#include "custom_config.h"
+#include "private_config.h"
+
+#ifndef TESTNET_PURESTAKE_API_TOKEN
+#error Purestake needs a token. Please define TESTNET_PURESTAKE_API_TOKEN in private_config.h
+#endif
+
 #define SERVER_URL              TESTNET_PURESTAKE_API
 #define SERVER_PORT             TESTNET_PURESTAKE_PORT
 #define SERVER_TOKEN_HEADER     (TESTNET_PURESTAKE_AUTH_HEADER TESTNET_PURESTAKE_API_TOKEN)
+
 #elif API_PROVIDER==LOCAL
-#include "custom_config.h"
+
+#include "private_config.h"
+
+#ifndef TESTNET_LOCAL_API_TOKEN
+#error Local node needs a token. Please define TESTNET_LOCAL_API_TOKEN in private_config.h
+#endif
+
 #define SERVER_URL              TESTNET_LOCAL_API
 #define SERVER_PORT             TESTNET_LOCAL_PORT
 #define SERVER_TOKEN_HEADER     (TESTNET_LOCAL_AUTH_HEADER TESTNET_LOCAL_API_TOKEN)
+
 #else
+
 // default provider is AlgoExplorer
+
 #define SERVER_URL              TESTNET_ALGOEXPLORER_API
 #define SERVER_PORT             TESTNET_ALGOEXPLORER_PORT
 #define SERVER_TOKEN_HEADER     (TESTNET_ALGOEXPLORER_AUTH_HEADER TESTNET_ALGOEXPLORER_API_TOKEN)

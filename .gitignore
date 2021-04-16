@@ -1,4 +1,7 @@
 build
 cmake-build-*
 
+# custom_config contains private data
+private_config.h
+
 .DS_Store
