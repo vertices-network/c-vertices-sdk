@@ -21,12 +21,13 @@ vertices_evt_handler(vtc_evt_t *evt);
 static provider_info_t providers =
     {.url = SERVER_URL, .port = SERVER_PORT, .header = SERVER_TOKEN_HEADER};
 
-static account_info_t accounts[ACCOUNT_NUMBER] = {
-    {.public = {0}, .private_key = {
-        0}, .amount = 0}, // this account is used to send data, private key is taken from config/private_key.bin
+// This account is used to send data, private key is taken from config/private_key.bin
+static account_info_t sender_account = {.public = {0}, .private_key = {
+    0}, .amount = 0};
+// Receiver account, Vertices is about to get richer 😎
+static account_info_t vertices_account =
     {.public = "27J56E73WOFSEQUECLRCLRNBV3D74H7BYB7USEXCJOYPLBTACULABWMLVU", .private_key = {
-        0}, .amount = 0}, // this account is the receiver
-};
+        0}, .amount = 0};
 
 static vertex_t m_vertex = {
     .provider = &providers,
@@ -50,8 +51,8 @@ vertices_evt_handler(vtc_evt_t *evt)
 
                 // libsodium wants to have private and public keys concatenated
                 unsigned char keys[crypto_sign_ed25519_SECRETKEYBYTES] = {0};
-                memcpy(keys, accounts[0].private_key, sizeof(accounts[0].private_key));
-                memcpy(&keys[32], accounts[0].public_key, sizeof(accounts[0].public_key));
+                memcpy(keys, sender_account.private_key, sizeof(sender_account.private_key));
+                memcpy(&keys[32], sender_account.public_key, sizeof(sender_account.public_key));
 
                 // prepend "TX" to the payload before signing
                 unsigned char to_be_signed[tx->payload_length + 2];
@@ -136,7 +137,7 @@ source_keys(bool create_new)
     {
         LOG_INFO("🔑 Loading private key from: %s", CONFIG_PATH "private_key.bin");
 
-        bytes_read = fread(accounts[0].private_key, 1, 64, f);
+        bytes_read = fread(sender_account.private_key, 1, 64, f);
         fclose(f);
     }
 
@@ -149,8 +150,8 @@ source_keys(bool create_new)
 
         crypto_sign_ed25519_seed_keypair(ed25519_pk, ed25519_sk, seed);
 
-        memcpy(accounts[0].private_key, ed25519_sk, sizeof(accounts[0].private_key));
-        memcpy(accounts[0].public_key, ed25519_pk, sizeof(accounts[0].public_key));
+        memcpy(sender_account.private_key, ed25519_sk, sizeof(sender_account.private_key));
+        memcpy(sender_account.public_key, ed25519_pk, sizeof(sender_account.public_key));
 
         FILE *fw = fopen(CONFIG_PATH "private_key.bin", "wb");
         if (fw == NULL)
@@ -174,22 +175,24 @@ source_keys(bool create_new)
 
     unsigned char checksum[32] = {0};
     char public_key_checksum[36] = {0};
-    memcpy(public_key_checksum, accounts[0].public_key, sizeof(accounts[0].public_key));
+    memcpy(public_key_checksum, sender_account.public_key, sizeof(sender_account.public_key));
 
-    err_code = sha512_256(accounts[0].public_key, sizeof(accounts[0].public_key), checksum);
+    err_code = sha512_256(sender_account.public_key, sizeof(sender_account.public_key), checksum);
     VTC_ASSERT(err_code);
 
     memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);
 
     size_t size = 58;
-    memset(accounts[0].public, 0, sizeof(accounts[0].public)); // make sure init to zeros (string)
+    memset(sender_account.public,
+           0,
+           sizeof(sender_account.public)); // make sure init to zeros (string)
     err_code = b32_encode((const char *) public_key_checksum,
                           sizeof(public_key_checksum),
-                          accounts[0].public,
+                          sender_account.public,
                           &size);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("💳 Sender account %s", accounts[0].public);
+    LOG_INFO("💳 Sender account %s", sender_account.public);
 
     return VTC_SUCCESS;
 }
@@ -249,23 +252,23 @@ main(int argc, char *argv[])
 
     // create accounts
     size_t account_handle_sender = 0;
-    err_code = vertices_add_account(&accounts[0], &account_handle_sender);
+    err_code = vertices_add_account(&sender_account, &account_handle_sender);
     VTC_ASSERT(err_code);
 
     // creating a receiver account is not mandatory but we can use it to load the public key from the
     // base32-encoded string
     size_t account_handle_receiver = 0;
-    err_code = vertices_add_account(&accounts[1], &account_handle_receiver);
+    err_code = vertices_add_account(&vertices_account, &account_handle_receiver);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("🤑 %d Algos on %s", accounts[0].amount, accounts[0].public);
+    LOG_INFO("🤑 %d Algos on %s", sender_account.amount, sender_account.public);
 
-    if (accounts[0].amount < 2000)
+    if (sender_account.amount < 2000)
     {
         LOG_ERROR(
             "🙄 Amount available on account is too low to pass a transaction, consider adding Algos");
         LOG_INFO("👉 Go to https://bank.testnet.algorand.network/, send money to: %s",
-                 accounts[0].public);
+                 sender_account.public);
         LOG_INFO("😎 Then wait for a few seconds for transaction to pass...");
         return 0;
     }
@@ -274,7 +277,7 @@ main(int argc, char *argv[])
     char *notes = "Vertices.network is live";
     err_code =
         vertices_transaction_pay_new(account_handle_sender,
-                                     (char *) accounts[1].public_key,
+                                     (char *) vertices_account.public_key,
                                      1000,
                                      notes);
     VTC_ASSERT(err_code);
