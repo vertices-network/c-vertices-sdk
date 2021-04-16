@@ -7,12 +7,13 @@
 
 
 #include <printf.h>
+#include "vertices_config.h"
 
-#ifndef LOG_LEVEL
-#define LOG_LEVEL 4 // default log level is to print everything
+#ifndef VTC_LOG_LEVEL
+#define LOG_LEVEL 0 // if variable has not been set, print nothing
 #endif
 
-#if LOG_LEVEL >= 4
+#if VTC_LOG_LEVEL >= 4
 
 #define LOG_DEBUG(...)                             \
  do {                                                   \
@@ -27,7 +28,7 @@
 
 #endif
 
-#if LOG_LEVEL >= 3
+#if VTC_LOG_LEVEL >= 3
 
 #define LOG_INFO(...)                                   \
  do {                                                   \
@@ -42,7 +43,7 @@
 
 #endif
 
-#if LOG_LEVEL >= 2
+#if VTC_LOG_LEVEL >= 2
 
 #define LOG_WARNING(...)                                   \
  do {                                                   \
@@ -57,7 +58,7 @@
 
 #endif
 
-#if LOG_LEVEL >= 1
+#if VTC_LOG_LEVEL >= 1
 
 #define LOG_ERROR(...)                                   \
  do {                                                   \
