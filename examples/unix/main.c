@@ -139,38 +139,35 @@ source_keys(bool create_new)
         fclose(f);
     }
 
-    if (f == NULL || bytes_read != 64)
+    if (create_new)
     {
-        if (create_new)
+        LOG_WARNING("Creating new random account and storing it (path " CONFIG_PATH ")");
+
+        unsigned char ed25519_sk[crypto_sign_ed25519_SECRETKEYBYTES];
+        randombytes_buf(seed, sizeof(seed));
+
+        crypto_sign_ed25519_seed_keypair(ed25519_pk, ed25519_sk, seed);
+
+        memcpy(accounts[0].private_key, ed25519_sk, sizeof(accounts[0].private_key));
+        memcpy(accounts[0].public_key, ed25519_pk, sizeof(accounts[0].public_key));
+
+        FILE *fw = fopen(CONFIG_PATH "private_key.bin", "wb");
+        if (fw == NULL)
         {
-            LOG_WARNING("private_key.bin does not exist or keys not found, creating new random account (path " CONFIG_PATH ")");
-
-            unsigned char ed25519_sk[crypto_sign_ed25519_SECRETKEYBYTES];
-            randombytes_buf(seed, sizeof(seed));
-
-            crypto_sign_ed25519_seed_keypair(ed25519_pk, ed25519_sk, seed);
-
-            memcpy(accounts[0].private_key, ed25519_sk, sizeof(accounts[0].private_key));
-            memcpy(accounts[0].public_key, ed25519_pk, sizeof(accounts[0].public_key));
-
-            FILE *fw = fopen(CONFIG_PATH "private_key.bin", "wb");
-            if (fw == NULL)
-            {
-                LOG_ERROR("Cannot create " CONFIG_PATH "private_key.bin");
-                return VTC_ERROR_NOT_FOUND;
-            }
-            else
-            {
-                fwrite(ed25519_sk, 1, sizeof(ed25519_sk), fw);
-                fclose(f);
-            }
+            LOG_ERROR("Cannot create " CONFIG_PATH "private_key.bin");
+            return VTC_ERROR_NOT_FOUND;
         }
         else
         {
-            LOG_WARNING("🤔 You can pass the -n flag to create a new account");
-
-            return VTC_ERROR_NOT_FOUND;
+            fwrite(ed25519_sk, 1, sizeof(ed25519_sk), fw);
+            fclose(f);
         }
+    }
+    else if (f == NULL || bytes_read != 64)
+    {
+        LOG_WARNING("🤔 private_key.bin does not exist or keys not found. You can pass the -n flag to create a new account");
+
+        return VTC_ERROR_NOT_FOUND;
     }
 
     unsigned char checksum[32] = {0};
@@ -263,7 +260,7 @@ main(int argc, char *argv[])
 
     if (accounts[0].amount < 2000)
     {
-        LOG_ERROR("Amount available on account is too low to pass a transaction, consider adding Algos");
+        LOG_ERROR("🙄 Amount available on account is too low to pass a transaction, consider adding Algos");
         LOG_INFO("👉 Go to https://bank.testnet.algorand.network/, send money to: %s", accounts[0].public);
         LOG_INFO("😎 Then wait for a few seconds for transaction to pass...");
         return 0;
