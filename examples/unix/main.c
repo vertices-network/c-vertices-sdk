@@ -190,7 +190,7 @@ source_keys(bool create_new)
                           &size);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("Using account %s", accounts[0].public);
+    LOG_INFO("Sender account %s", accounts[0].public);
 
     return VTC_SUCCESS;
 }
@@ -273,6 +273,8 @@ main(int argc, char *argv[])
     err_code =
         vertices_transaction_pay_new(account_handle_sender, (char *) accounts[1].public_key, 1000);
     VTC_ASSERT(err_code);
+
+    LOG_INFO("💸 Sent TX");
 
     // delete the created account from the Vertices wallet
     err_code = vertices_del_account(account_handle_sender);

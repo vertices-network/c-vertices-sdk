@@ -39,7 +39,7 @@ account_add(account_info_t *account, size_t *id)
     {
         if (m_accounts[i].info == NULL)
         {
-            LOG_INFO("👛 Creating account #%zu", i);
+            LOG_INFO("👛 Added account #%zu", i);
             break;
         }
     }
