@@ -1,0 +1,10 @@
+name: vertices
+channels:
+  - litex-hub
+dependencies:
+  - python=3.8
+  - cmake
+  - ninja
+  - pyserial
+  - ccache
+  - dfu-util

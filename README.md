@@ -62,6 +62,27 @@ git clone --recurse-submodules <url> [path]
 git submodule add <url> [path]
 ```
 
+### Environments
+
+Using Conda is a great way to isolate the development environment ([more about Conda](https://interrupt.memfault.com/blog/conda-developer-environments)). 
+
+We are providing an [environment file](utils/environment.yml) to be installed:
+
+```shell
+conda env create -n vertices -f utils/environment.yml
+conda activate vertices
+```
+
+The Conda environment will be updated accordingly to the source code if a new dependency or version is needed. 
+Once you have checked-out the repo at a different commit, make sure to update your environment to use the right dependencies:
+
+```shell
+conda env update -f environment.yml
+```
+
+🔜 We might also provide a Docker container once we have set up CI/CD.
+
+
 ### Configuration
 
 A config file provides an easy way to configure the SDK: [`config/vertices_config.h`](examples/unix/config/vertices_config.h). The file is fully documented.
