@@ -145,10 +145,18 @@ http_post(const provider_info_t *provider,
         if (res != CURLE_OK)
         {
             LOG_ERROR("curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+            err_code = VTC_ERROR_INTERNAL;
         }
+        else
+        {
+            curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
+            LOG_DEBUG("POST %s response %ld", url_full, response_code);
 
-        curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
-        LOG_DEBUG("GET %s response %ld", url_full, response_code);
+            if (response_code >= 300)
+            {
+                err_code = VTC_HTTP_ERROR + response_code;
+            }
+        }
 
         /* free the custom headers */
         curl_slist_free_all(chunk);
