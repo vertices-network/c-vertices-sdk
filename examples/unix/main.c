@@ -261,13 +261,13 @@ main(int argc, char *argv[])
     err_code = vertices_add_account(&vertices_account, &account_handle_receiver);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("🤑 %d Algos on %s", sender_account.amount, sender_account.public);
+    LOG_INFO("🤑 %f Algos on %s", sender_account.amount/1.e6, sender_account.public);
 
     if (sender_account.amount < 2000)
     {
         LOG_ERROR(
             "🙄 Amount available on account is too low to pass a transaction, consider adding Algos");
-        LOG_INFO("👉 Go to https://bank.testnet.algorand.network/, send money to: %s",
+        LOG_INFO("👉 Go to https://bank.testnet.algorand.network/, dispense Algos to: %s",
                  sender_account.public);
         LOG_INFO("😎 Then wait for a few seconds for transaction to pass...");
         return 0;
