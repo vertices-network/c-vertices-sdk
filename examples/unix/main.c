@@ -261,7 +261,7 @@ main(int argc, char *argv[])
     err_code = vertices_add_account(&vertices_account, &account_handle_receiver);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("🤑 %d Algos on %s", sender_account.amount, sender_account.public);
+    LOG_INFO("🤑 %f Algos on %s", sender_account.amount/1.e6, sender_account.public);
 
     if (sender_account.amount < 2000)
     {
