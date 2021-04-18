@@ -267,7 +267,7 @@ main(int argc, char *argv[])
     {
         LOG_ERROR(
             "🙄 Amount available on account is too low to pass a transaction, consider adding Algos");
-        LOG_INFO("👉 Go to https://bank.testnet.algorand.network/, send money to: %s",
+        LOG_INFO("👉 Go to https://bank.testnet.algorand.network/, dispense Algos to: %s",
                  sender_account.public);
         LOG_INFO("😎 Then wait for a few seconds for transaction to pass...");
         return 0;
