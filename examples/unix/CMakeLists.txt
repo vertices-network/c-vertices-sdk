@@ -8,6 +8,16 @@ set(INC_FOLDERS
         config
         )
 
+# brew-installed libraries, in case installed in `/opt/homebrew/`
+if(APPLE)
+    if(EXISTS /opt/homebrew/include AND EXISTS /opt/homebrew/lib)
+        include_directories(/opt/homebrew/include/)
+        link_directories(/opt/homebrew/lib/)
+    endif()
+elseif(UNIX)
+    message("You might need to add path to libsodium (headers and library)")
+endif()
+
 # check that BLOCKCHAIN_PROVIDER variable is set, default to `algorand`
 if(DEFINED ENV{BLOCKCHAIN_PROVIDER})
     message(STATUS "Using blockchain: $ENV{BLOCKCHAIN_PROVIDER}")
