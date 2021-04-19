@@ -53,7 +53,7 @@ encode_tx_replace_signature(size_t bufid)
             {
                 // get the pointer to the beginning of the signature
                 mpack_tag_t signature_tag = mpack_read_tag(&reader);
-                size_t len = mpack_tag_str_length(&signature_tag);
+                size_t len = mpack_tag_bin_length(&signature_tag);
                 if (len == SIGNATURE_LENGTH)
                 {
                     char *signature_ptr = (char *) mpack_read_bytes_inplace(&reader, len);
