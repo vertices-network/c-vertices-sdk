@@ -21,11 +21,11 @@ vertices_evt_handler(vtc_evt_t *evt);
 static provider_info_t providers =
     {.url = (char *) SERVER_URL, .port = SERVER_PORT, .header = (char *) SERVER_TOKEN_HEADER};
 
-// This account is used to send data, private key is taken from config/private_key.bin
-static account_info_t sender_account = {.public = {0}, .private_key = {
+// Alice's account is used to send data, private key is taken from config/private_key.bin
+static account_info_t alice_account = {.public = {0}, .private_key = {
     0}, .amount = 0};
-// Receiver account, Vertices is about to get richer 😎
-static account_info_t vertices_account =
+// Bob is receiving the money 😎
+static account_info_t bob_account =
     {.public = "27J56E73WOFSEQUECLRCLRNBV3D74H7BYB7USEXCJOYPLBTACULABWMLVU", .private_key = {
         0}, .amount = 0};
 
@@ -51,8 +51,8 @@ vertices_evt_handler(vtc_evt_t *evt)
 
                 // libsodium wants to have private and public keys concatenated
                 unsigned char keys[crypto_sign_ed25519_SECRETKEYBYTES] = {0};
-                memcpy(keys, sender_account.private_key, sizeof(sender_account.private_key));
-                memcpy(&keys[32], sender_account.public_key, sizeof(sender_account.public_key));
+                memcpy(keys, alice_account.private_key, sizeof(alice_account.private_key));
+                memcpy(&keys[32], alice_account.public_key, sizeof(alice_account.public_key));
 
                 // prepend "TX" to the payload before signing
                 unsigned char to_be_signed[tx->payload_length + 2];
@@ -136,7 +136,7 @@ source_keys(bool create_new)
     {
         LOG_INFO("🔑 Loading private key from: %s", CONFIG_PATH "private_key.bin");
 
-        bytes_read = fread(sender_account.private_key, 1, 64, f);
+        bytes_read = fread(alice_account.private_key, 1, 64, f);
         fclose(f);
     }
 
@@ -149,8 +149,8 @@ source_keys(bool create_new)
 
         crypto_sign_ed25519_seed_keypair(ed25519_pk, ed25519_sk, seed);
 
-        memcpy(sender_account.private_key, ed25519_sk, sizeof(sender_account.private_key));
-        memcpy(sender_account.public_key, ed25519_pk, sizeof(sender_account.public_key));
+        memcpy(alice_account.private_key, ed25519_sk, sizeof(alice_account.private_key));
+        memcpy(alice_account.public_key, ed25519_pk, sizeof(alice_account.public_key));
 
         FILE *fw = fopen(CONFIG_PATH "private_key.bin", "wb");
         if (fw == NULL)
@@ -174,24 +174,24 @@ source_keys(bool create_new)
 
     unsigned char checksum[32] = {0};
     char public_key_checksum[36] = {0};
-    memcpy(public_key_checksum, sender_account.public_key, sizeof(sender_account.public_key));
+    memcpy(public_key_checksum, alice_account.public_key, sizeof(alice_account.public_key));
 
-    err_code = sha512_256(sender_account.public_key, sizeof(sender_account.public_key), checksum);
+    err_code = sha512_256(alice_account.public_key, sizeof(alice_account.public_key), checksum);
     VTC_ASSERT(err_code);
 
     memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);
 
     size_t size = 58;
-    memset(sender_account.public,
+    memset(alice_account.public,
            0,
-           sizeof(sender_account.public)); // make sure init to zeros (string)
+           sizeof(alice_account.public)); // make sure init to zeros (string)
     err_code = b32_encode((const char *) public_key_checksum,
                           sizeof(public_key_checksum),
-                          sender_account.public,
+                          alice_account.public,
                           &size);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("💳 Sender account %s", sender_account.public);
+    LOG_INFO("💳 Alice's account %s", alice_account.public);
 
     return VTC_SUCCESS;
 }
@@ -250,24 +250,24 @@ main(int argc, char *argv[])
              version.patch);
 
     // create accounts
-    size_t account_handle_sender = 0;
-    err_code = vertices_add_account(&sender_account, &account_handle_sender);
+    size_t alice_account_handle = 0;
+    err_code = vertices_add_account(&alice_account, &alice_account_handle);
     VTC_ASSERT(err_code);
 
     // creating a receiver account is not mandatory but we can use it to load the public key from the
     // base32-encoded string
-    size_t account_handle_receiver = 0;
-    err_code = vertices_add_account(&vertices_account, &account_handle_receiver);
+    size_t bob_account_handle = 0;
+    err_code = vertices_add_account(&bob_account, &bob_account_handle);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("🤑 %f Algos on %s", sender_account.amount / 1.e6, sender_account.public);
+    LOG_INFO("🤑 %f Algos on Alice's account (%s)", alice_account.amount / 1.e6, alice_account.public);
 
-    if (sender_account.amount < 2000)
+    if (alice_account.amount < 2000)
     {
         LOG_ERROR(
             "🙄 Amount available on account is too low to pass a transaction, consider adding Algos");
         LOG_INFO("👉 Go to https://bank.testnet.algorand.network/, dispense Algos to: %s",
-                 sender_account.public);
+                 alice_account.public);
         LOG_INFO("😎 Then wait for a few seconds for transaction to pass...");
         return 0;
     }
@@ -275,8 +275,8 @@ main(int argc, char *argv[])
     // send assets from account 0 to account 1
     char *notes = (char *) "Vertices.network is live";
     err_code =
-        vertices_transaction_pay_new(account_handle_sender,
-                                     (char *) vertices_account.public_key,
+        vertices_transaction_pay_new(alice_account_handle,
+                                     (char *) bob_account.public_key,
                                      1000,
                                      notes);
     VTC_ASSERT(err_code);
@@ -287,7 +287,10 @@ main(int argc, char *argv[])
         err_code = vertices_event_process(&queue_size);
     }
 
-    // delete the created account from the Vertices wallet
-    err_code = vertices_del_account(account_handle_sender);
+    // delete the created accounts from the Vertices wallet
+    err_code = vertices_del_account(alice_account_handle);
+    VTC_ASSERT(err_code);
+
+    err_code = vertices_del_account(bob_account_handle);
     VTC_ASSERT(err_code);
 }
