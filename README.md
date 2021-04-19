@@ -23,6 +23,11 @@ At Vertices Network, we want to free your mind from the hassle of a safe design.
 - Secure Element support for future and more secure designs
 - Encrypted Flash for current designs
 
+> ⚠️ IMPORTANT
+> - The current version of the SDK is still *very early*;
+> - It is not advised to use it in a production environment;
+> - Use it at your own risk.
+
 ## 🧭 Repository structure
 
 ```shell
