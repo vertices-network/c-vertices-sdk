@@ -262,7 +262,7 @@ main(int argc, char *argv[])
 
     LOG_INFO("🤑 %f Algos on Alice's account (%s)", alice_account.amount / 1.e6, alice_account.public);
 
-    if (alice_account.amount < 2000)
+    if (alice_account.amount < 1001000)
     {
         LOG_ERROR(
             "🙄 Amount available on account is too low to pass a transaction, consider adding Algos");
@@ -273,11 +273,11 @@ main(int argc, char *argv[])
     }
 
     // send assets from account 0 to account 1
-    char *notes = (char *) "Vertices.network is live";
+    char *notes = (char *) "Alice sent 1 Algo to Bob";
     err_code =
         vertices_transaction_pay_new(alice_account_handle,
                                      (char *) bob_account.public_key,
-                                     1000,
+                                     1000000,
                                      notes);
     VTC_ASSERT(err_code);
 
@@ -286,6 +286,8 @@ main(int argc, char *argv[])
     {
         err_code = vertices_event_process(&queue_size);
     }
+
+    LOG_INFO("💸 Alice sent 1 algo to Bob");
 
     // delete the created accounts from the Vertices wallet
     err_code = vertices_del_account(alice_account_handle);
