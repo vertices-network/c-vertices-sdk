@@ -39,7 +39,7 @@ account_add(account_info_t *account, size_t *id)
     {
         if (m_accounts[i].info == NULL)
         {
-            LOG_INFO("👛 Added account #%zu", i);
+            LOG_INFO("👛 Added account to wallet: #%zu", i);
             break;
         }
     }
@@ -85,6 +85,8 @@ account_delete(size_t id)
     }
 
     memset(&m_accounts[id], 0, sizeof(account_details_t));
+
+    LOG_INFO("👛 Deleted account from wallet: #%zu", id);
 
     return VTC_SUCCESS;
 }
