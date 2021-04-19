@@ -12,9 +12,11 @@ set(CMAKE_MACOSX_RPATH 1)
 
 message(STATUS "💎 Loading targets")
 
+# Module path to find libs
+set(CMAKE_MODULE_PATH ${VERTICES_ROOT}/utils/)
+
 # Set blockchain
 set(ENV{BLOCKCHAIN_PROVIDER} algorand)
-
 add_subdirectory(examples/unix)
 add_subdirectory(external/cJSON)
 add_subdirectory(external/mbedtls)
