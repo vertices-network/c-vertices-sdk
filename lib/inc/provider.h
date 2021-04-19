@@ -35,7 +35,7 @@ ret_code_t
 provider_tx_params_load(transaction_t *tx);
 
 ret_code_t
-provider_tx_post(const uint8_t *bin_payload, size_t length);
+provider_tx_post(const uint8_t *bin_payload, size_t length, unsigned char * tx_id);
 
 ret_code_t
 provider_ping();

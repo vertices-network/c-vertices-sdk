@@ -12,26 +12,28 @@
 #define OPTIONAL_TX_FIELDS_MAX_SIZE 0
 #endif
 
-#define ADDRESS_LENGTH              32
-#define HASH_LENGTH                 32
-#define TX_PAYLOAD_MAX_LENGTH       (512+OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES)
-#define SIGNATURE_LENGTH            64
-#define PUBLIC_B32_STR_MAX_LENGTH   65
+#define ADDRESS_LENGTH                  32
+#define HASH_LENGTH                     32
+#define TX_PAYLOAD_MAX_LENGTH           (512+OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES)
+#define SIGNATURE_LENGTH                64
+#define PUBLIC_B32_STR_MAX_LENGTH       65
+#define TRANSACTION_HASH_STR_MAX_LENGTH 53
 
 /// Asynchronous operations can be handled using Vertices events types
 typedef enum
 {
-    VTC_EVT_TX_READY_TO_SIGN = 0,
-    VTC_EVT_TX_READY_TO_SEND,
-    VTC_EVT_TX_SUCCESS,
+    VTC_EVT_TX_READY_TO_SIGN =
+    0, ///< transaction's payload must be signed: the user must provide the signing function and emit the \c VTC_EVT_TX_READY_TO_SEND event.
+    VTC_EVT_TX_READY_TO_SEND, ///< transaction is ready to be sent to the blockchain API
+    VTC_EVT_TX_SUCCESS, ///< transaction has been successfully sent and executed, after that event, the buffer is freed.
 } vtc_evt_type_t;
 
 /// Events contains a type and a bufid. When implementing the event handler, the `bufid`
 /// should be used to retrieve the data to be processed. Data type depends on event type.
 typedef struct
 {
-    vtc_evt_type_t type;
-    size_t bufid;
+    vtc_evt_type_t type; ///< \see vtc_evt_type_t
+    size_t bufid; ///< internal buffer ID, used to identify a pending transaction
 } vtc_evt_t;
 
 typedef struct
@@ -52,10 +54,13 @@ typedef struct
 typedef struct
 {
     unsigned char payload[TX_PAYLOAD_MAX_LENGTH];
-    size_t payload_length;  // length of data to be signed. if not 0, indicates that tx is pending.
-    size_t payload_offset;  // start of the payload to be signed
-    // full payload size is: payload_length + payload_offset
+    size_t
+        payload_length;  ///< length of data to be signed. if not 0, indicates that TX is pending.
+    size_t
+        payload_offset;  ///< start of the payload to be signed. Full payload size is: \c payload_length + \c payload_offset
     unsigned char signature[SIGNATURE_LENGTH];
+    unsigned char id[TRANSACTION_HASH_STR_MAX_LENGTH
+    ]; ///< Unique Identifier of the transaction. It can be used to find the transaction in the ledger
 } signed_transaction_t;
 
 typedef struct

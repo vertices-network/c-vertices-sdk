@@ -73,7 +73,7 @@ vertices_evt_handler(vtc_evt_t *evt)
                 LOG_DEBUG("Signature %s (%zu bytes)", b64_signature, b64_signature_len);
 
                 evt->type = VTC_EVT_TX_READY_TO_SEND;
-                err_code = vertices_event_process(evt);
+                err_code = vertices_event_schedule(evt);
             }
         }
             break;
@@ -114,7 +114,7 @@ vertices_evt_handler(vtc_evt_t *evt)
         }
             break;
 
-        default:LOG_ERROR("Unhandled event: %u", evt->type);
+        default:
             break;
     }
 
@@ -282,7 +282,11 @@ main(int argc, char *argv[])
                                      notes);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("💸 Transaction executed!");
+    size_t queue_size = 1;
+    while(queue_size && err_code == VTC_SUCCESS)
+    {
+        err_code = vertices_event_process(&queue_size);
+    }
 
     // delete the created account from the Vertices wallet
     err_code = vertices_del_account(account_handle_sender);

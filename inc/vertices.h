@@ -37,12 +37,15 @@ vertices_transaction_pay_new(size_t account_id, char *receiver, uint64_t amount,
 ret_code_t
 vertices_transaction_get(size_t bufid, signed_transaction_t **tx);
 
-/// Call this function to have the Vertices SDK process pending events
-/// This function will call the user-defined callback if any
-/// \param evt
-/// \return
 ret_code_t
-vertices_event_process(vtc_evt_t *evt);
+vertices_event_schedule(vtc_evt_t *evt);
+
+/// Call this function to have the Vertices SDK process pending events
+/// This function will call the user-defined callback if one has been passed when using \see vertices_new
+/// \param queue_size
+/// \return \c VTC_SUCCESS if event has correctly been processed
+ret_code_t
+vertices_event_process(size_t * queue_size);
 
 /// Initialize Vertices SDK
 /// \param config Pass the configuration such as providers and user-defined event handler

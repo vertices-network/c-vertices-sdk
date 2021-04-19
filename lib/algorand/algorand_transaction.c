@@ -249,7 +249,7 @@ transaction_pay(size_t account_id, char *receiver, uint64_t amount, void * param
     wr_idx = (wr_idx + 1) % PENDING_TX_COUNT;
 
     // push event for asynchronous operation
-    err_code = vertices_event_process(&evt);
+    err_code = vertices_event_schedule(&evt);
 
     return err_code;
 }
@@ -297,15 +297,17 @@ transaction_pending_send(size_t bufid)
     size_t payload_len = m_pending_tx[bufid].payload_length
         + m_pending_tx[bufid].payload_offset;
     err_code = provider_tx_post(m_pending_tx[bufid].payload,
-                                payload_len);
+                                payload_len, m_pending_tx[bufid].id);
 
     // transaction has been executed, free up spot
     if (err_code == VTC_SUCCESS)
     {
-        vtc_evt_t evt = {.type = VTC_EVT_TX_SUCCESS, .bufid = wr_idx};
+        vtc_evt_t evt = {.type = VTC_EVT_TX_SUCCESS, .bufid = bufid};
+
+        LOG_INFO("🧾 Transaction executed, ID: %s", m_pending_tx[bufid].id);
 
         // push event for asynchronous operation
-        vertices_event_process(&evt);
+        vertices_event_schedule(&evt);
     }
 
     return err_code;

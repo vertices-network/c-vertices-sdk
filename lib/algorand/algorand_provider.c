@@ -201,7 +201,7 @@ provider_tx_params_load(transaction_t *tx)
 }
 
 ret_code_t
-provider_tx_post(const uint8_t *bin_payload, size_t length)
+provider_tx_post(const uint8_t *bin_payload, size_t length, unsigned char * tx_id)
 {
     ret_code_t err_code;
 
@@ -215,6 +215,35 @@ provider_tx_post(const uint8_t *bin_payload, size_t length)
                   "/v2/transactions",
                   header,
                   (const char *) bin_payload, length, &m_provider.response_buffer);
+
+    if (err_code == VTC_SUCCESS)
+    {
+        cJSON *json = cJSON_Parse(rx_buf);
+        if (json == NULL)
+        {
+            const char *error_ptr = cJSON_GetErrorPtr();
+            if (error_ptr != NULL)
+            {
+                LOG_ERROR("JSON, error before: %s", error_ptr);
+            }
+            return VTC_ERROR_INTERNAL;
+        }
+        else
+        {
+            const cJSON *tx_id_json = cJSON_GetObjectItemCaseSensitive(json, "txId");
+            if (cJSON_IsString(tx_id_json) && (tx_id_json->valuestring != NULL))
+            {
+                if (strlen(tx_id_json->valuestring) >= TRANSACTION_HASH_STR_MAX_LENGTH)
+                {
+                    return VTC_ERROR_NO_MEM;
+                }
+                else
+                {
+                    strcpy((char *) tx_id, tx_id_json->valuestring);
+                }
+            }
+        }
+    }
 
     return err_code;
 }
