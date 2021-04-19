@@ -2,7 +2,7 @@
 
 ## 📑 Specifications
 
-The Vertices SDK provides developers with an easy way to implement Blockchain wallets on embedded devices.
+The Vertices SDK provides developers with an easy way for devices to interact with Blockchains.
 
 We are doing our best to achieve those goals:
 
@@ -12,7 +12,7 @@ We are doing our best to achieve those goals:
   - [Unix-based OSes](examples/unix)
   - ESP-IDF
   - Zephyr
-- Connect to any Algorand API `algod` (local or remote provider)
+- Connect to any Algorand API (local or remote provider)
 - Build with CMake and Make
 - Continuous Integration to maintain code quality:
   - Build static library for several targets
@@ -23,9 +23,9 @@ At Vertices Network, we want to free your mind from the hassle of a safe design.
 - Secure Element support for future and more secure designs
 - Encrypted Flash for current designs
 
-> ⚠️ IMPORTANT
-> - The current version of the SDK is still *very early*;
-> - It is not advised to use it in a production environment;
+> ⚠️  IMPORTANT
+> - The current version of the SDK is still *very early*.
+> - It is not advised to use it in a production environment.
 > - Use it at your own risk.
 
 ## 🧭 Repository structure
@@ -67,23 +67,7 @@ git clone --recurse-submodules <url> [path]
 git submodule add <url> [path]
 ```
 
-### Environments
-
-Using Conda is a great way to isolate the development environment ([more about Conda](https://interrupt.memfault.com/blog/conda-developer-environments)). 
-
-We are providing an [environment file](utils/environment.yml) to be installed:
-
-```shell
-conda env create -f utils/environment.yml
-conda activate vertices
-```
-
-The Conda environment will be updated accordingly to the source code if a new dependency or version is needed. 
-Once you have checked-out the repo at a different commit, make sure to update your environment to use the right dependencies:
-
-```shell
-conda env update -f utils/environment.yml
-```
+Checkout [the documentation to get started](https://docs.vertices.network/vertices-sdk/quickstart).
 
 🔜 We might also provide a Docker container once we have set up CI/CD.
 
