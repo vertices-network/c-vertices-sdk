@@ -14,6 +14,9 @@
 __WEAK void
 app_error_fault_handler(uint32_t id, uint32_t pc, long info)
 {
+    UNUSED_PARAMETER(id);
+    UNUSED_PARAMETER(pc);
+
     LOG_ERROR("Fatal error: 0x%x %s:%u",
               ((error_info_t *) info)->err_code,
               ((error_info_t *) info)->p_file_name,

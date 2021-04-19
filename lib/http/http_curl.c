@@ -36,13 +36,14 @@ ret_code_t
 http_get(const provider_info_t *provider,
          char *relative_path,
          const char *headers,
-         payload_t *response_buf)
+         payload_t *response_buf,
+         uint32_t *response_code)
 {
     VTC_ASSERT_BOOL(m_curl != NULL);
 
     ret_code_t err_code = VTC_SUCCESS;
     CURLcode res;
-    long response_code;
+    long response;
 
     char url_full[512] = {0};
     sprintf(url_full, "%s%s", provider->url, relative_path);
@@ -71,12 +72,14 @@ http_get(const provider_info_t *provider,
         }
         else
         {
-            curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
-            LOG_DEBUG("GET %s response %ld", url_full, response_code);
+            curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response);
+            LOG_DEBUG("GET %s response %ld", url_full, response);
 
-            if (response_code >= 300)
+            if (response >= 300)
             {
-                err_code = VTC_HTTP_ERROR + response_code;
+                // todo does the response code enter into uint32_t?
+                *response_code = (uint32_t) response;
+                err_code = VTC_HTTP_ERROR;
             }
         }
 
@@ -97,13 +100,13 @@ http_post(const provider_info_t *provider,
           char *headers,
           const char *body,
           size_t body_size,
-          payload_t *response_buf)
+          payload_t *response_buf,
+          long *response_code)
 {
     VTC_ASSERT_BOOL(m_curl != NULL);
 
     ret_code_t err_code = VTC_SUCCESS;
     CURLcode res;
-    long response_code;
 
     char url_full[256] = {0};
     sprintf(url_full, "%s%s", provider->url, relative_path);
@@ -152,12 +155,12 @@ http_post(const provider_info_t *provider,
         }
         else
         {
-            curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &response_code);
-            LOG_DEBUG("POST %s response %ld", url_full, response_code);
+            curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, response_code);
+            LOG_DEBUG("POST %s response %ld", url_full, *response_code);
 
-            if (response_code >= 300)
+            if (*response_code >= 300)
             {
-                err_code = VTC_HTTP_ERROR + response_code;
+                err_code = VTC_HTTP_ERROR;
             }
         }
 

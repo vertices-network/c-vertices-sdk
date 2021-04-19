@@ -11,10 +11,6 @@
 #include "provider.h"
 #include "cJSON.h"
 
-#if BLOCKCHAIN_PROVIDER != algorand
-#error "You are trying to compile Vertices for the Algorand blockchain but you haven't specified a Blockchain provider."
-#endif
-
 static size_t
 response_payload_callback(void *received_data, size_t size, size_t count, void *response_payload);
 
@@ -94,12 +90,12 @@ parse_accounts_msgpack(account_details_t *account, char *buf, size_t len)
 
         for (uint32_t i = 0; i < count; ++i)
         {
-            mpack_tag_t tag = mpack_read_tag(&reader);
+            mpack_tag_t mapped_tag = mpack_read_tag(&reader);
 
             // elements are `string` followed by `value`
-            if (mpack_tag_type(&tag) == mpack_type_str)
+            if (mpack_tag_type(&mapped_tag) == mpack_type_str)
             {
-                uint32_t length = mpack_tag_str_length(&tag);
+                uint32_t length = mpack_tag_str_length(&mapped_tag);
                 // data is the pointer to the value
                 const char *data = mpack_read_bytes_inplace(&reader, length);
 
@@ -121,14 +117,14 @@ provider_account_info_get(account_details_t *account)
 {
     char relative_path[128] = {0};
 
-    size_t
-        len = sprintf(relative_path, "/v2/accounts/%s?format=msgpack", account->info->public);
-    VTC_ASSERT_BOOL(len < 128);
+    int ret = sprintf(relative_path, "/v2/accounts/%s?format=msgpack", account->info->public);
+    VTC_ASSERT_BOOL(ret < 128 && ret >= 0);
 
+    uint32_t response_code = 0;
     ret_code_t err_code = http_get(&m_provider.provider,
                                    relative_path,
                                    m_provider.provider.header,
-                                   &m_provider.response_buffer);
+                                   &m_provider.response_buffer, &response_code);
     if (err_code == VTC_SUCCESS)
     {
         parse_accounts_msgpack(account, rx_buf, m_provider.response_buffer.size);
@@ -140,12 +136,13 @@ provider_account_info_get(account_details_t *account)
 ret_code_t
 provider_tx_params_load(transaction_t *tx)
 {
+    uint32_t response_code = 0;
     ret_code_t
         err_code =
         http_get(&m_provider.provider,
-                 "/v2/transactions/params",
+                 (char *) "/v2/transactions/params",
                  m_provider.provider.header,
-                 &m_provider.response_buffer);
+                 &m_provider.response_buffer, &response_code);
 
     if (err_code == VTC_SUCCESS)
     {
@@ -183,13 +180,13 @@ provider_tx_params_load(transaction_t *tx)
             const cJSON *fee = cJSON_GetObjectItemCaseSensitive(json, "min-fee");
             if (cJSON_IsNumber(fee))
             {
-                tx->fee = fee->valueint;
+                tx->fee = (uint64_t) fee->valueint;
             }
 
             const cJSON *last_round = cJSON_GetObjectItemCaseSensitive(json, "last-round");
             if (cJSON_IsNumber(last_round))
             {
-                tx->details->first_valid = last_round->valueint + 1;
+                tx->details->first_valid = (uint64_t) last_round->valueint + 1;
                 tx->details->last_valid = tx->details->first_valid + 1000;
             }
 
@@ -201,20 +198,21 @@ provider_tx_params_load(transaction_t *tx)
 }
 
 ret_code_t
-provider_tx_post(const uint8_t *bin_payload, size_t length, unsigned char * tx_id)
+provider_tx_post(const uint8_t *bin_payload, size_t length, unsigned char *tx_id)
 {
     ret_code_t err_code;
 
     char header[256] = {0};
-    size_t header_len =
+    int ret =
         sprintf(header, "%s\r\nContent-Type: application/x-binary", m_provider.provider.header);
-    VTC_ASSERT_BOOL(header_len < sizeof header);
+    VTC_ASSERT_BOOL(ret < 128 && ret >= 0);
 
+    long response_code = 0;
     err_code =
         http_post(&m_provider.provider,
-                  "/v2/transactions",
+                  (char *) "/v2/transactions",
                   header,
-                  (const char *) bin_payload, length, &m_provider.response_buffer);
+                  (const char *) bin_payload, length, &m_provider.response_buffer, &response_code);
 
     if (err_code == VTC_SUCCESS)
     {
@@ -251,12 +249,13 @@ provider_tx_post(const uint8_t *bin_payload, size_t length, unsigned char * tx_i
 ret_code_t
 provider_version_get(provider_version_t *version)
 {
+    uint32_t response_code = 0;
     ret_code_t
         err_code =
         http_get(&m_provider.provider,
-                 "/versions",
+                 (char *) "/versions",
                  m_provider.provider.header,
-                 &m_provider.response_buffer);
+                 &m_provider.response_buffer, &response_code);
 
     if (err_code == VTC_SUCCESS)
     {
@@ -309,15 +308,15 @@ provider_version_get(provider_version_t *version)
 
             if (cJSON_IsNumber(major))
             {
-                m_provider.version.major = major->valueint;
+                m_provider.version.major = (unsigned int) major->valueint;
             }
             if (cJSON_IsNumber(minor))
             {
-                m_provider.version.minor = minor->valueint;
+                m_provider.version.minor = (unsigned int) minor->valueint;
             }
             if (cJSON_IsNumber(patch))
             {
-                m_provider.version.patch = patch->valueint;
+                m_provider.version.patch = (unsigned int) patch->valueint;
             }
         }
 
@@ -346,12 +345,13 @@ provider_version_get(provider_version_t *version)
 ret_code_t
 provider_ping()
 {
+    uint32_t response_code = 0;
     ret_code_t
         err_code =
         http_get(&m_provider.provider,
-                 "/health",
+                 (char *) "/health",
                  m_provider.provider.header,
-                 &m_provider.response_buffer);
+                 &m_provider.response_buffer, &response_code);
     return err_code;
 }
 

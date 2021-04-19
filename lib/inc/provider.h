@@ -38,7 +38,7 @@ ret_code_t
 provider_tx_post(const uint8_t *bin_payload, size_t length, unsigned char * tx_id);
 
 ret_code_t
-provider_ping();
+provider_ping(void);
 
 ret_code_t
 provider_init(provider_info_t *provider);

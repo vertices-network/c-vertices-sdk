@@ -19,7 +19,7 @@ static ret_code_t
 vertices_evt_handler(vtc_evt_t *evt);
 
 static provider_info_t providers =
-    {.url = SERVER_URL, .port = SERVER_PORT, .header = SERVER_TOKEN_HEADER};
+    {.url = (char *) SERVER_URL, .port = SERVER_PORT, .header = (char *) SERVER_TOKEN_HEADER};
 
 // This account is used to send data, private key is taken from config/private_key.bin
 static account_info_t sender_account = {.public = {0}, .private_key = {
@@ -114,8 +114,7 @@ vertices_evt_handler(vtc_evt_t *evt)
         }
             break;
 
-        default:
-            break;
+        default:break;
     }
 
     return err_code;
@@ -218,7 +217,7 @@ main(int argc, char *argv[])
     LOG_INFO("😎 Vertices SDK running on Unix-based OS");
 
     int ret = sodium_init();
-    VTC_ASSERT(ret);
+    VTC_ASSERT_BOOL(ret == 0);
 
     // read private key from file
     err_code = source_keys(create_new);
@@ -261,7 +260,7 @@ main(int argc, char *argv[])
     err_code = vertices_add_account(&vertices_account, &account_handle_receiver);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("🤑 %f Algos on %s", sender_account.amount/1.e6, sender_account.public);
+    LOG_INFO("🤑 %f Algos on %s", sender_account.amount / 1.e6, sender_account.public);
 
     if (sender_account.amount < 2000)
     {
@@ -274,7 +273,7 @@ main(int argc, char *argv[])
     }
 
     // send assets from account 0 to account 1
-    char *notes = "Vertices.network is live";
+    char *notes = (char *) "Vertices.network is live";
     err_code =
         vertices_transaction_pay_new(account_handle_sender,
                                      (char *) vertices_account.public_key,
@@ -283,7 +282,7 @@ main(int argc, char *argv[])
     VTC_ASSERT(err_code);
 
     size_t queue_size = 1;
-    while(queue_size && err_code == VTC_SUCCESS)
+    while (queue_size && err_code == VTC_SUCCESS)
     {
         err_code = vertices_event_process(&queue_size);
     }

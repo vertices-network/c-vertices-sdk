@@ -122,7 +122,7 @@ encode_tx_pay(transaction_t *tx, size_t bufid)
     if (tx->details->note != NULL)
     {
         mpack_write_cstr(&writer, "note");
-        mpack_write_bin(&writer, tx->details->note, strlen(tx->details->note));
+        mpack_write_bin(&writer, tx->details->note, (uint32_t) strlen(tx->details->note));
     }
 
     mpack_write_cstr(&writer, "rcv");

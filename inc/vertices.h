@@ -17,7 +17,7 @@ ret_code_t
 vertices_version(provider_version_t *version);
 
 ret_code_t
-vertices_ping();
+vertices_ping(void);
 
 ret_code_t
 vertices_add_account(account_info_t *account, size_t *account_id);

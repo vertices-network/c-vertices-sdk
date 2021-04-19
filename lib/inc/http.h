@@ -35,7 +35,8 @@ ret_code_t
 http_get(const provider_info_t *provider,
          char *relative_path,
          const char *headers,
-         payload_t *response_buf);
+         payload_t *response_buf,
+         uint32_t *response_code);
 
 /// Post HTTP payload
 /// \param provider
@@ -50,9 +51,10 @@ http_post(const provider_info_t *provider,
           char *headers,
           const char *body,
           size_t body_size,
-          payload_t *response_buf);
+          payload_t *response_buf,
+          long *response_code);
 
 void
-http_close();
+http_close(void);
 
 #endif //VERTICES_INC_HTTP_H

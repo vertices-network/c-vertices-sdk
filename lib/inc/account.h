@@ -60,6 +60,6 @@ ret_code_t
 account_delete(size_t id);
 
 ret_code_t
-account_init();
+account_init(void);
 
 #endif //C_VERTICES_SDK_SRC_ACCOUNT_H
