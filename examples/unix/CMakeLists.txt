@@ -30,6 +30,9 @@ else()
 endif()
 
 add_definitions(-DCONFIG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/config/")
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
+
 # lots of warnings and all warnings as errors
 add_compile_options(-pedantic -Wall -Werror -Wstrict-prototypes -Wwrite-strings -Wshadow -Winit-self -Wcast-align -Wformat=2 -Wmissing-prototypes -Wstrict-overflow=2 -Wc++-compat -Wundef -Wswitch-default -Wconversion)
 
@@ -41,7 +44,5 @@ include_directories(${CURL_INCLUDE_DIRS})
 add_library(Vertices::vertices STATIC IMPORTED)
 
 include_directories(${INC_FOLDERS})
-#set(CMAKE_C_FLAGS ${CFLAGS})
-
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} sodium curl vertices)

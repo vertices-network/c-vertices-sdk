@@ -5,6 +5,7 @@
 #ifndef VERTICES_EXAMPLES_UNIX_INC_VTC_LOG_H
 #define VERTICES_EXAMPLES_UNIX_INC_VTC_LOG_H
 
+#define __FILENAME__ ((char *)__FILE__ + SOURCE_PATH_SIZE)
 
 #include <printf.h>
 #include "vertices_config.h"
@@ -17,7 +18,7 @@
 
 #define LOG_DEBUG(...)                             \
  do {                                                   \
-    printf("🟣 [%s:%d] ", __FILE__, __LINE__);       \
+    printf("🟣 [%s:%d] ", __FILENAME__, __LINE__);       \
     printf(__VA_ARGS__);                                \
     printf("\r\n");                                     \
  } while(0)                                             \
@@ -32,7 +33,7 @@
 
 #define LOG_INFO(...)                                   \
  do {                                                   \
-    printf("🟢 [%s:%d] ", __FILE__, __LINE__);       \
+    printf("🟢 [%s:%d] ", __FILENAME__, __LINE__);       \
     printf(__VA_ARGS__);                            \
     printf("\r\n");                                 \
  } while(0)                                             \
@@ -47,7 +48,7 @@
 
 #define LOG_WARNING(...)                                   \
  do {                                                   \
-    printf("🟠 [%s:%d] ", __FILE__, __LINE__);       \
+    printf("🟠 [%s:%d] ", __FILENAME__, __LINE__);       \
     printf(__VA_ARGS__);                            \
     printf("\r\n");                                 \
  } while(0)                                             \
@@ -62,7 +63,7 @@
 
 #define LOG_ERROR(...)                                   \
  do {                                                   \
-    printf("🔴 [%s:%d] ", __FILE__, __LINE__);       \
+    printf("🔴 [%s:%d] ", __FILENAME__, __LINE__);       \
     printf(__VA_ARGS__);                            \
     printf("\r\n");                                 \
  } while(0)                                             \
