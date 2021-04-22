@@ -88,11 +88,11 @@ b32_decode(const char *encoded, char *decoded_data, size_t *output_size)
         // Look up one base32 digit
         if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z'))
         {
-            ch = (ch & 0x1F) - 1;
+            ch = (char) ((ch & 0x1F) - 1);
         }
         else if (ch >= '2' && ch <= '7')
         {
-            ch -= '2' - 26;
+            ch -= (char) ('2' - 26);
         }
         else
         {
