@@ -8,14 +8,26 @@ set(INC_FOLDERS
         config
         )
 
-# brew-installed libraries, in case installed in `/opt/homebrew/`
+if(EXISTS ${HOME}/miniconda/envs/vertices/include AND EXISTS ${HOME}/miniconda/envs/vertices/lib)
+    # installed vertices env using miniconda
+    include_directories(${HOME}/miniforge3/envs/vertices/include)
+    link_directories(${HOME}/miniforge3/envs/vertices/lib)
+endif()
+
 if(APPLE)
-    if(EXISTS /opt/homebrew/include AND EXISTS /opt/homebrew/lib)
+    # Apple ARM64 specifics:
+    # - `miniconda` is better replaced with `miniforge3`
+    # - brew-installed packages are located into `/opt/homebrew/`
+
+    if(EXISTS ${HOME}/miniforge3/envs/vertices/include AND EXISTS ${HOME}/miniforge3/envs/vertices/lib)
+        # installed vertices env using miniforge3
+        include_directories(${HOME}/miniforge3/envs/vertices/include)
+        link_directories(${HOME}/miniforge3/envs/vertices/lib)
+    elseif(EXISTS /opt/homebrew/include AND EXISTS /opt/homebrew/lib)
+        # brew-installed libraries, in case installed in `/opt/homebrew/`
         include_directories(/opt/homebrew/include/)
         link_directories(/opt/homebrew/lib/)
     endif()
-elseif(UNIX)
-    message("You might need to add path to libsodium (headers and library)")
 endif()
 
 # check that BLOCKCHAIN_PROVIDER variable is set, default to `algorand`

@@ -1,7 +1,6 @@
 name: vertices
 channels:
   - conda-forge
-  - litex-hub
 dependencies:
   - python=3.8
   - conda-forge::cmake
@@ -10,4 +9,3 @@ dependencies:
   - conda-forge::libsodium # For Unix example
   - pyserial
   - ccache
-  - dfu-util
