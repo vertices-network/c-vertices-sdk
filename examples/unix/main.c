@@ -277,7 +277,7 @@ main(int argc, char *argv[])
     err_code =
         vertices_transaction_pay_new(alice_account_handle,
                                      (char *) bob_account.public_key,
-                                     1000000,
+                                     AMOUNT_SENT,
                                      notes);
     VTC_ASSERT(err_code);
 
@@ -287,7 +287,7 @@ main(int argc, char *argv[])
         err_code = vertices_event_process(&queue_size);
     }
 
-    LOG_INFO("💸 Alice sent 1 algo to Bob");
+    LOG_INFO("💸 Alice sent %f algo to Bob", AMOUNT_SENT / 1.e6);
 
     // delete the created accounts from the Vertices wallet
     err_code = vertices_del_account(alice_account_handle);
