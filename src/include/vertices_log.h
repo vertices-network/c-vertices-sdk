@@ -5,7 +5,7 @@
 #ifndef VERTICES_EXAMPLES_UNIX_INC_VTC_LOG_H
 #define VERTICES_EXAMPLES_UNIX_INC_VTC_LOG_H
 
-#define __FILENAME__ ((char *)__FILE__ + SOURCE_PATH_SIZE)
+#define __FILENAME__ ((const char *)__FILE__ + SOURCE_PATH_SIZE)
 
 #include <printf.h>
 #include "vertices_config.h"

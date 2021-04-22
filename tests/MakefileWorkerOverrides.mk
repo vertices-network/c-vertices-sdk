@@ -21,7 +21,9 @@ VERTICES_EXTRA_INC_PATHS += \
   -I$(PROJECT_DIR)
 
 CPPUTEST_CPPFLAGS += $(VERTICES_EXTRA_INC_PATHS) \
-  -DVERTICES_UNITTEST
+  -DVERTICES_UNITTEST \
+  -DSOURCE_PATH_SIZE=0 \
+  -DVTC_LOG_LEVEL=4
 
 # Clang defaults to c++98 but all modern cpp compilers implement most of the features (such as
 # variadic macros) introduced in c99 that were later added as part of the c++11 specification

@@ -14,7 +14,7 @@ export BUILD_DIR=build
 export PROJECT_DIR := $(abspath $(CURRENT_DIR)/..)
 export TEST_ROOT := $(CURRENT_DIR)
 export PROJECT_ROOT_DIR := $(PROJECT_DIR)
-export VTC_LIB_DIR := $(PROJECT_DIR)/lib
+export VTC_LIB_DIR := $(PROJECT_DIR)/src
 
 export VTC_TEST_SRC_DIR ?= $(TEST_ROOT)/src
 export TEST_COMMON_SRC_DIR := $(TEST_ROOT)/src
@@ -23,8 +23,8 @@ export TEST_MOCK_DIR := $(TEST_ROOT)/mocks
 export CPPUTEST_MAKFILE_INFRA := $(TEST_ROOT)/MakefileWorkerOverrides.mk
 
 VTC_ALL_INCLUDE_DIRS := \
-  $(VTC_LIB_DIR)/inc \
-  $(PROJECT_DIR)/inc \
+  $(VTC_LIB_DIR)/include \
+  $(PROJECT_DIR)/include \
   $(PROJECT_DIR)/mdk \
   $(PROJECT_DIR)/external/mbedtls/include
 
