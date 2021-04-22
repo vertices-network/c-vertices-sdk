@@ -1,4 +1,4 @@
-name: Build
+name: All
 
 on: [push]
 
@@ -25,8 +25,25 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Build & Test
+    - name: Unit tests
       working-directory: ${{github.workspace}}
       shell: bash
-      # Execute the build.  You can specify a specific target with "--target <NAME>"
+      run: |
+        make -C tests clean
+        make -C tests all
+
+    - name: Build
+      working-directory: ${{github.workspace}}
+      shell: bash
       run: make all
+
+    - name: Alice & Bob
+      working-directory: ${{github.workspace}}
+      shell: bash
+      env:
+        ACCOUNT_KEYS: ${{ secrets.ACCOUNT_KEYS }}
+      # first copy the private key into file
+      # then starts the example: Alice send 1 Algo to Bob
+      run: |
+        ./utils/str_to_bin.py "$ACCOUNT_KEYS" examples/unix/config/private_key.bin
+        ./build/examples/unix/unix_example

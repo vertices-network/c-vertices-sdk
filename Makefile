@@ -13,7 +13,7 @@ clean:
 	make -C tests clean
 	rm -rf build
 
-all: clean $(OUTPUT_DIRECTORY) tests
+all: clean $(OUTPUT_DIRECTORY)
 	cd $(OUTPUT_DIRECTORY) && cmake ..
 	make -C $(OUTPUT_DIRECTORY) vertices
 	make -C $(OUTPUT_DIRECTORY) unix_example
