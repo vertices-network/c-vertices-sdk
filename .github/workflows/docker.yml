@@ -3,7 +3,7 @@ name: docker
 on:
   push:
     paths:
-      - 'utils/Dockerfile'
+      - '*/Dockerfile'
 
 jobs:
   docker:
