@@ -92,7 +92,7 @@ b32_decode(const char *encoded, char *decoded_data, size_t *output_size)
         }
         else if (ch >= '2' && ch <= '7')
         {
-            ch -= (char) ('2' - 26);
+            ch = (char) (ch - ('2' - 26));
         }
         else
         {
