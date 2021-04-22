@@ -27,25 +27,25 @@ add_library(vertices STATIC ${VERTICES_SRC_FILES})
 
 target_include_directories(vertices
         PUBLIC
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>"
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../inc>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../mdk>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/cJSON>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/mbedtls/library>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/ed25519>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack>"
-        "$<INSTALL_INTERFACE:../inc>"
+        "$<INSTALL_INTERFACE:../include>"
         )
 
 # public header files
-install(FILES ../inc/vertices.h ../inc/vertices_errors.h ../inc/vertices_types.h DESTINATION inc)
+install(FILES ../include/vertices.h ../include/vertices_errors.h ../include/vertices_types.h DESTINATION include)
 
 install(TARGETS vertices
         EXPORT verticesTargets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         RUNTIME DESTINATION bin
-        INCLUDES DESTINATION inc
+        INCLUDES DESTINATION include
         )
 
 target_link_libraries(vertices cjson mbedcrypto)

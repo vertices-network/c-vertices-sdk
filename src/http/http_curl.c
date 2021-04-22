@@ -2,7 +2,7 @@
 // Created by Cyril on 18/03/2021.
 //
 
-#include "../../inc/vertices_errors.h"
+#include "vertices_errors.h"
 #include <provider.h>
 #include <curl/curl.h>
 #include <vertices_log.h>

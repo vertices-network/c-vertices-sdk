@@ -74,7 +74,7 @@ Checkout [the documentation to get started](https://docs.vertices.network/vertic
 
 ### Configuration
 
-A config file provides an easy way to configure the SDK: [`inc/vertices_config.h`](inc/vertices_config.h). The file is fully documented.
+A config file provides an easy way to configure the SDK: [`include/vertices_config.h`](include/vertices_config.h). The file is fully documented.
 
 ### Compilation
 
