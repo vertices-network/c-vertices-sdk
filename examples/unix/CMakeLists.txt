@@ -8,34 +8,32 @@ set(INC_FOLDERS
         config
         )
 
-if(EXISTS ${HOME}/miniconda/envs/vertices/include AND EXISTS ${HOME}/miniconda/envs/vertices/lib)
-    # installed vertices env using miniconda
-    include_directories(${HOME}/miniforge3/envs/vertices/include)
-    link_directories(${HOME}/miniforge3/envs/vertices/lib)
-endif()
-
-if(APPLE)
-    # Apple ARM64 specifics:
-    # - `miniconda` is better replaced with `miniforge3`
-    # - brew-installed packages are located into `/opt/homebrew/`
-
-    if(EXISTS ${HOME}/miniforge3/envs/vertices/include AND EXISTS ${HOME}/miniforge3/envs/vertices/lib)
-        # installed vertices env using miniforge3
-        include_directories(${HOME}/miniforge3/envs/vertices/include)
-        link_directories(${HOME}/miniforge3/envs/vertices/lib)
-    elseif(EXISTS /opt/homebrew/include AND EXISTS /opt/homebrew/lib)
-        # brew-installed libraries, in case installed in `/opt/homebrew/`
-        include_directories(/opt/homebrew/include/)
-        link_directories(/opt/homebrew/lib/)
-    endif()
-endif()
-
 # check that BLOCKCHAIN_PROVIDER variable is set, default to `algorand`
 if(DEFINED ENV{BLOCKCHAIN_PROVIDER})
     message(STATUS "Using blockchain: $ENV{BLOCKCHAIN_PROVIDER}")
 else()
     set(ENV{BLOCKCHAIN_PROVIDER} algorand)
     message(STATUS "Default blockchain: $ENV{BLOCKCHAIN_PROVIDER}")
+endif()
+
+# get path to dependencies if Conda is being used
+if(EXISTS $ENV{CONDA_PREFIX}/include AND EXISTS $ENV{CONDA_PREFIX}/lib)
+    # installed vertices environment with conda
+    if($ENV{CONDA_PREFIX} MATCHES "vertices")
+        message(STATUS "Importing libs from Conda env (vertices): $ENV{CONDA_PREFIX}")
+        include_directories($ENV{CONDA_PREFIX}/include)
+        link_directories($ENV{CONDA_PREFIX}/lib)
+    endif()
+endif()
+
+if(APPLE)
+    # Apple ARM64 specifics:
+    # - brew-installed packages are located into `/opt/homebrew/`
+    if(EXISTS /opt/homebrew/include AND EXISTS /opt/homebrew/lib)
+        # brew-installed libraries, in case installed in `/opt/homebrew/`
+        include_directories(/opt/homebrew/include/)
+        link_directories(/opt/homebrew/lib/)
+    endif()
 endif()
 
 add_definitions(-DCONFIG_PATH="${CMAKE_CURRENT_SOURCE_DIR}/config/")
@@ -48,9 +46,6 @@ add_compile_options(-pedantic -Wall -Werror -Wstrict-prototypes -Wwrite-strings 
 # Find cURL
 find_package(CURL)
 include_directories(${CURL_INCLUDE_DIRS})
-
-# Find Sodium
-find_package(Sodium)
 
 # Import Vertices
 add_library(Vertices::vertices STATIC IMPORTED)
