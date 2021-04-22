@@ -22,11 +22,11 @@ static provider_info_t providers =
     {.url = (char *) SERVER_URL, .port = SERVER_PORT, .header = (char *) SERVER_TOKEN_HEADER};
 
 // Alice's account is used to send data, private key is taken from config/private_key.bin
-static account_info_t alice_account = {.public = {0}, .private_key = {
+static account_info_t alice_account = {.public_b32 = {0}, .private_key = {
     0}, .amount = 0};
 // Bob is receiving the money 😎
 static account_info_t bob_account =
-    {.public = "27J56E73WOFSEQUECLRCLRNBV3D74H7BYB7USEXCJOYPLBTACULABWMLVU", .private_key = {
+    {.public_b32 = "27J56E73WOFSEQUECLRCLRNBV3D74H7BYB7USEXCJOYPLBTACULABWMLVU", .private_key = {
         0}, .amount = 0};
 
 static vertex_t m_vertex = {
@@ -182,16 +182,16 @@ source_keys(bool create_new)
     memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);
 
     size_t size = 58;
-    memset(alice_account.public,
+    memset(alice_account.public_b32,
            0,
-           sizeof(alice_account.public)); // make sure init to zeros (string)
+           sizeof(alice_account.public_b32)); // make sure init to zeros (string)
     err_code = b32_encode((const char *) public_key_checksum,
                           sizeof(public_key_checksum),
-                          alice_account.public,
+                          alice_account.public_b32,
                           &size);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("💳 Alice's account %s", alice_account.public);
+    LOG_INFO("💳 Alice's account %s", alice_account.public_b32);
 
     return VTC_SUCCESS;
 }
@@ -260,14 +260,14 @@ main(int argc, char *argv[])
     err_code = vertices_add_account(&bob_account, &bob_account_handle);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("🤑 %f Algos on Alice's account (%s)", alice_account.amount / 1.e6, alice_account.public);
+    LOG_INFO("🤑 %f Algos on Alice's account (%s)", alice_account.amount / 1.e6, alice_account.public_b32);
 
     if (alice_account.amount < 1001000)
     {
         LOG_ERROR(
             "🙄 Amount available on account is too low to pass a transaction, consider adding Algos");
         LOG_INFO("👉 Go to https://bank.testnet.algorand.network/, dispense Algos to: %s",
-                 alice_account.public);
+                 alice_account.public_b32);
         LOG_INFO("😎 Then wait for a few seconds for transaction to pass...");
         return 0;
     }

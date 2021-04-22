@@ -198,7 +198,7 @@ transaction_pay(size_t account_id, char *receiver, uint64_t amount, void * param
     // check params is correct (must be less than 1000 bytes)
     if (params != NULL)
     {
-        if (strlen(params) > OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES)
+        if (strlen((const char *)params) > OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES)
         {
             // consider using more bytes for each transaction by setting a larger value to
             // OPTIONAL_TX_FIELDS_MAX_SIZE

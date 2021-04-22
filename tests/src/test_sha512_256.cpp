@@ -41,8 +41,8 @@ prv_run_encode_test_case(const unsigned char *input_str, const char expected_out
 
     LOG_DEBUG("SHA512/256 - Input str len %zu", in_len);
 
-    ret_code_t ret = sha512_256(input_str, in_len, (unsigned char *) result);
-    LOG_DEBUG("SHA512/256 - Ret %u", ret);
+    ret_code_t ret = (ret_code_t) sha512_256(input_str, in_len, (unsigned char *) result);
+    LOG_DEBUG("SHA512/256 - Ret %d", ret);
 
     MEMCMP_EQUAL(expected_out_buf, result, 32);
 }

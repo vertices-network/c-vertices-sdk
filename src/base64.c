@@ -10,15 +10,6 @@
 
 // based on https://opensource.apple.com/source/QuickTimeStreamingServer/QuickTimeStreamingServer-452/CommonUtilitiesLib/base64.c
 
-__unused static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                                'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-                                'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-                                'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                                'w', 'x', 'y', 'z', '0', '1', '2', '3',
-                                '4', '5', '6', '7', '8', '9', '+', '/'};
-
 static const unsigned char pr2six[256] =
     {
         /* ASCII table */
@@ -100,7 +91,6 @@ b64_decode(const char *input_data,
         return VTC_ERROR_NO_MEM;
     }
 
-    size_t nbytesdecoded;
     const unsigned char *bufin;
     unsigned char *bufout;
     size_t nprbytes;
@@ -108,7 +98,6 @@ b64_decode(const char *input_data,
     bufin = (const unsigned char *) input_data;
     while (pr2six[*(bufin++)] <= 63);
     nprbytes = (size_t) (bufin - (const unsigned char *) input_data) - 1;
-    nbytesdecoded = ((nprbytes + 3) / 4) * 3;
 
     bufout = (unsigned char *) decoded_data;
     bufin = (const unsigned char *) input_data;

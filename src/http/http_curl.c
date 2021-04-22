@@ -7,7 +7,6 @@
 #include <curl/curl.h>
 #include <vertices_log.h>
 #include <string.h>
-#include <libc.h>
 
 static CURL *m_curl;
 

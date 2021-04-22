@@ -45,7 +45,7 @@ typedef struct
 
 typedef struct
 {
-    char public[PUBLIC_B32_STR_MAX_LENGTH]; // b64 public address, with \0
+    char public_b32[PUBLIC_B32_STR_MAX_LENGTH]; // b64 public address, with \0
     unsigned char private_key[ADDRESS_LENGTH]; // 32-bytes private key
     unsigned char public_key[ADDRESS_LENGTH]; // 32-bytes public key
     int32_t amount; // tokens on account

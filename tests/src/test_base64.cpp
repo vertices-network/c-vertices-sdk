@@ -86,8 +86,14 @@ prv_run_decode_test_case(const char *encoded_str, const char *expected_out_buf)
     size_t decode_buf_len = BASE64_DECODE_MIN_LEN(in_len);
     size_t expected_size = decode_buf_len;
 
-    if (encoded_str[in_len - 1] == '=') expected_size--;
-    if (encoded_str[in_len - 2] == '=') expected_size--;
+    if (in_len > 0)
+    {
+        if (encoded_str[in_len - 1] == '=') expected_size--;
+    }
+    if (in_len > 1)
+    {
+        if (encoded_str[in_len - 2] == '=') expected_size--;
+    }
 
     char result[decode_buf_len];
     memset(result, 0x00, decode_buf_len);

@@ -33,7 +33,7 @@ VTC_ALL_SRC_DIRS := \
 	$(VTC_LIB_DIR)
 
 VTC_ALL_INCLUDE_FLAGS := \
-  $(foreach COMPONENT_INCLUDE, $(VTC_ALL_INCLUDE_DIRS) $(VTC_ALL_SRC_DIRS), -I$(COMPONENT_INCLUDE))
+  $(foreach COMPONENT_INCLUDE, $(VTC_ALL_INCLUDE_DIRS), -I$(COMPONENT_INCLUDE))
 
 export VERTICES_EXTRA_INC_PATHS += \
   $(VTC_ALL_INCLUDE_FLAGS)
@@ -65,5 +65,6 @@ sha512_256: mbded_library
 
 clean:
 	rm -rf $(BUILD_DIR)
+	make -C $(PROJECT_ROOT_DIR)/external/mbedtls/library clean
 
 .PHONY: all clean $(TEST_MAKEFILES)

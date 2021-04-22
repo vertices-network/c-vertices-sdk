@@ -3,7 +3,10 @@
 #
 # For osx, the brew path will look something like /usr/local/Cellar/cpputest/3.8
 CPPUTEST_HOME ?= /usr
-# TARGET_PLATFORM ?= x86_64-linux-gnu
+
+ifeq ($(DOCKER_RUN),1)
+TARGET_PLATFORM:=$(shell uname -m)-linux-gnu/
+endif
 
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 CURRENT_DIR := $(dir $(MKFILE_PATH))

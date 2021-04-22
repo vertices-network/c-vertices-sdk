@@ -21,6 +21,7 @@ typedef enum
     VTC_ERROR_INVALID_STATE,
     VTC_ERROR_INVALID_ADDR,
     VTC_ERROR_OFFLINE,
+    VTC_ERROR_ASSERT_FAILS,
     VTC_HTTP_ERROR = 0x10000000,
 } ret_code_t;
 
@@ -72,7 +73,7 @@ app_error_handler(ret_code_t error_code, uint32_t line_num, const uint8_t *p_fil
         const uint32_t LOCAL_BOOLEAN_VALUE = (BOOLEAN_VALUE); \
         if (!LOCAL_BOOLEAN_VALUE)                             \
         {                                                     \
-            APP_ERROR_HANDLER(0);                             \
+            APP_ERROR_HANDLER(VTC_ERROR_ASSERT_FAILS);        \
         }                                                     \
     } while (0)
 

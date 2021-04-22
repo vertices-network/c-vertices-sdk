@@ -17,7 +17,7 @@ from_b32_init(account_info_t *account)
 {
     char result[36] = {0};
     size_t result_size = sizeof result;
-    b32_decode(account->public, result, &result_size);
+    b32_decode(account->public_b32, result, &result_size);
 
     // todo verify checksum
 

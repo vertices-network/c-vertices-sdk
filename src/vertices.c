@@ -60,7 +60,7 @@ vertices_transaction_get(size_t bufid, signed_transaction_t **tx)
 }
 
 static size_t
-event_queue_size()
+event_queue_size(void)
 {
     return (m_events_queue.wr_index - m_events_queue.rd_index) & (VTC_EVENTS_COUNT - 1);
 }

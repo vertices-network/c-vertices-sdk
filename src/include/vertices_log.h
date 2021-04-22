@@ -8,6 +8,7 @@
 #define __FILENAME__ ((const char *)__FILE__ + SOURCE_PATH_SIZE)
 
 #include <printf.h>
+#include <stdio.h>
 #include "vertices_config.h"
 
 #ifndef VTC_LOG_LEVEL
