@@ -15,8 +15,8 @@
 #include "vertices_errors.h"
 
 TEST_GROUP(VerticesBase32){
-    void setup() {}
-    void teardown() {}
+    void setup() override {}
+    void teardown() override {}
 };
 
 static void

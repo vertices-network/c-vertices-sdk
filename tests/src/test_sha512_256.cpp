@@ -15,8 +15,8 @@
 #include "vertices_errors.h"
 
 TEST_GROUP(VerticesSha512_256){
-    void setup() {}
-    void teardown() {}
+    void setup() override {}
+    void teardown() override {}
 };
 
 const unsigned char one_block_message[32] =
