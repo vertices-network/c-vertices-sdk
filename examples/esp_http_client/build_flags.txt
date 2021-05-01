@@ -1,0 +1,1 @@
+-DCONFIG_ESP_WIFI_SSID=\"Freebox-7BE861\" -DCONFIG_ESP_WIFI_PASSWORD=\"stagnantis-arbuta-immerget4-trudebatur?9\" -DCONFIG_ESP_MAXIMUM_RETRY=5
