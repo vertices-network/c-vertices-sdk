@@ -26,9 +26,12 @@ response_payload_callback(void *received_data, size_t size, size_t count, void *
 
     VTC_ASSERT_BOOL(received_data_size < HTTP_MAXIMUM_CONTENT_LENGTH);
 
-    payload_t *payload = (payload_t *) response_payload;
-    payload->data = rx_buf;
-    payload->size = received_data_size;
+    if (response_payload != NULL)
+    {
+        payload_t *payload = (payload_t *) response_payload;
+        payload->data = rx_buf;
+        payload->size = received_data_size;
+    }
 
     memcpy(rx_buf, received_data, received_data_size);
     rx_buf[received_data_size] = 0;
