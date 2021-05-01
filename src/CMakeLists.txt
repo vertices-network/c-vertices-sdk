@@ -26,8 +26,6 @@ set(VERTICES_INC_DIRS
 
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 
-include(CMakePrintHelpers)
-
 if (ESP_PLATFORM)
     # Add platform-specific http wrapper provided by Vertices
     list(APPEND VERTICES_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/http/http_esp.c)
@@ -40,6 +38,11 @@ if (ESP_PLATFORM)
             PRIV_INCLUDE_DIRS "${VERTICES_INC_DIRS}"
             REQUIRES mbedtls esp_http_client
             )
+
+elseif(ZEPHYR_BASE)
+
+    # Zephyr implementation is on the roadmap
+
 else ()
     # Add platform-specific http wrapper provided by Vertices
     list(APPEND VERTICES_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/http/http_curl.c)
