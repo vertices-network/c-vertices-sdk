@@ -41,6 +41,7 @@ typedef struct
     char *url;
     short port;
     char *header;
+    const char *cert_pem;
 } provider_info_t;
 
 typedef struct

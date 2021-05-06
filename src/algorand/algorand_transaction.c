@@ -139,7 +139,7 @@ encode_tx_pay(transaction_t *tx, size_t bufid)
     size = mpack_writer_buffer_used(&writer);
     m_pending_tx[bufid].payload_length = size - m_pending_tx[bufid].payload_offset;
 
-    LOG_DEBUG("mpack used %lu bytes to encode pay tx", size);
+    LOG_DEBUG("mpack used %zu bytes to encode pay tx", size);
 
     // finish writing
     if (mpack_writer_destroy(&writer) != mpack_ok)

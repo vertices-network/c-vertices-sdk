@@ -14,7 +14,7 @@
 /// 2 <-> Warning level
 /// 1 <-> Error level
 #ifndef VTC_LOG_LEVEL
-#define VTC_LOG_LEVEL 3 // default log level is to print info data
+#define VTC_LOG_LEVEL 4 // default log level is to print info data
 #endif
 
 /// Number of events that can be queued, must be a power of 2

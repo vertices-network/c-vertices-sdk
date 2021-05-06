@@ -29,7 +29,7 @@ if (COMPILE_ESP OR ESP_PLATFORM)
     project(esp32_example)
 
     # add_subdirectory(examples/esp32)
-    add_subdirectory(examples/esp_http_client)
+    add_subdirectory(examples/esp32)
 else ()
     set(CMAKE_MACOSX_RPATH 1)
 

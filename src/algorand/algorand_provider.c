@@ -77,7 +77,7 @@ parse_accounts_msgpack(account_details_t *account, char *buf, size_t len)
     mpack_reader_init_data(&reader, buf, len);
 
     mpack_tag_t tag = mpack_read_tag(&reader);
-    if (mpack_reader_error(&reader) != mpack_ok)
+    if (mpack_reader_error(&reader) != mpack_ok || tag.type == mpack_type_nil)
     {
         return VTC_ERROR_INTERNAL;
     }
@@ -366,6 +366,7 @@ provider_init(provider_info_t *provider)
     m_provider.provider.url = provider->url;
     m_provider.provider.port = provider->port;
     m_provider.provider.header = provider->header;
+    m_provider.provider.cert_pem = provider->cert_pem;
 
     m_provider.response_payload_cb = response_payload_callback;
 
