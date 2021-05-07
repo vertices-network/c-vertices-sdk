@@ -26,6 +26,14 @@ Make sure you have the `IDF_PATH` environment variable defined, either in your `
 . export.sh
 ```
 
+Once setup, go to the example directory (same location of the README you are reading) and run:
+
+```shell
+# 'flash' if you want to install the firmware on your target
+# 'monitor' if you want to open the serial interface and see the logs
+idf.py build flash monitor
+```
+
 ### PlatformIO
 
 Open the directory using PlatformIO and build.
