@@ -10,4 +10,4 @@ idf_component_register(SRCS "esp32_example.c"
 # Add account keys from binary file in the Firmware image
 # ⚠️ This is not a secure way to handle keys!
 target_add_binary_data(${COMPONENT_LIB} "private_key.bin" "BINARY"
-        RENAME_TO signature_keys_bin)
+        RENAME_TO private_key_bin)

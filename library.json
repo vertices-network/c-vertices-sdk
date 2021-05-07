@@ -1,6 +1,6 @@
 {
 	"name": "vertices-sdk",
-	"version": "0.1.1",
+	"version": "0.1.3",
 	"keywords": "algorand, blockchain, wallet, api",
 	"description": "Blockchain wallet library to create blockchain-enabled IoT devices. It supports the Algorand API.",
 	"repository": {
@@ -9,8 +9,8 @@
 	},
 	"authors": [
 		{
-			"name": "Cyril Fougeray",
-			"email": "cyril@vertices.network",
+			"name": "Vertices Network",
+			"email": "team@vertices.network",
 			"url": "https://vertices.network"
 		}
 	],
@@ -18,6 +18,18 @@
 		"flags": ["-I src/include", "-DBLOCKCHAIN_PROVIDER=algorand"],
 		"srcFilter": ["+<*/*.c>", "+<*.c>", "+<*/*.h>", "+<http/http_esp.c>", "-<http/http_curl.c>"]
 	},
-	"frameworks": "*",
-	"platforms": "*"
+	"examples": [
+		{
+			"name": "esp32_example",
+			"base": "examples/esp32",
+			"files": [
+				"platformio.ini",
+				"main/esp32_example.c",
+				"README",
+				"extra.py"
+			]
+		}
+	],
+	"frameworks": "espidf",
+	"platforms": "espressif32"
 }
