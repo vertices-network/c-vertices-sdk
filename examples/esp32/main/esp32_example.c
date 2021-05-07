@@ -51,8 +51,8 @@ extern const char algoexplorer_root_cert_pem_end[] asm("_binary_algoexplorer_roo
  * $ ./unix_example -n
  * You can then copy \c private_key.bin into the example's \c main directory
  */
-extern const uint8_t signature_keys_start[] asm("_binary_signature_keys_bin_start");
-extern const uint8_t signature_key_end[] asm("_binary_signature_keys_bin_end");
+extern const uint8_t signature_keys_start[] asm("_binary_private_key_bin_start");
+extern const uint8_t signature_key_end[] asm("_binary_private_key_bin_end");
 
 static provider_info_t providers =
     {.url = (char *) "https://api.testnet.algoexplorer.io", .port = 0, .header = (char *) "", .cert_pem = algoexplorer_root_cert_pem_start};

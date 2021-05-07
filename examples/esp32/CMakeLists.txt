@@ -13,7 +13,7 @@ cmake_minimum_required(VERSION 3.5)
 list(APPEND EXTRA_COMPONENT_DIRS $ENV{IDF_PATH}/examples/common_components/protocol_examples_common)
 
 # Include vertices library if we are not building from PlatformIO
-if(NOT DEFINED ENV{PLATFORMIO_LIBDEPS_DIR})
+if(NOT ENV{IDF_PATH} MATCHES platformio)
     if (DEFINED VERTICES_ROOT)
         list(APPEND EXTRA_COMPONENT_DIRS ${VERTICES_ROOT}/src)
     else ()
