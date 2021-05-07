@@ -9,6 +9,9 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <base64.h>
+#include <sodium.h>
+#include <vertices_log.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
@@ -26,10 +29,12 @@
 #define MAX_HTTP_OUTPUT_BUFFER 2048
 static const char *TAG = "HTTP_CLIENT";
 
-/* Root cert for howsmyssl.com, taken from howsmyssl_com_root_cert.pem
+#ifndef AMOUNT_SENT
+#define AMOUNT_SENT 100
+#endif
 
-   The PEM file was extracted from the output of this command:
-   openssl s_client -showcerts -connect www.howsmyssl.com:443 </dev/null
+/* The PEM file was extracted from the output of this command:
+   openssl s_client -showcerts -connect www.algoexplorer.io:443 </dev/null
 
    The CA root cert is the last cert given in the chain of certs.
 
@@ -37,19 +42,26 @@ static const char *TAG = "HTTP_CLIENT";
    in the component.mk COMPONENT_EMBED_TXTFILES variable.
 */
 extern const char
-    howsmyssl_com_root_cert_pem_start[] asm("_binary_howsmyssl_com_root_cert_pem_start");
-extern const char
-    howsmyssl_com_root_cert_pem_end[]   asm("_binary_howsmyssl_com_root_cert_pem_end");
-
-extern const char
     algoexplorer_root_cert_pem_start[] asm("_binary_algoexplorer_root_cert_pem_start");
 extern const char algoexplorer_root_cert_pem_end[] asm("_binary_algoexplorer_root_cert_pem_end");
+
+/***
+ * The binary data is taken from a 64-byte binary file encapsulating the private and public keys
+ * It has been generated using the Unix example available on the repo, using the \c -n flag
+ * $ ./unix_example -n
+ * You can then copy \c private_key.bin into the example's \c main directory
+ */
+extern const uint8_t signature_keys_start[] asm("_binary_signature_keys_bin_start");
+extern const uint8_t signature_key_end[] asm("_binary_signature_keys_bin_end");
 
 static provider_info_t providers =
     {.url = (char *) "https://api.testnet.algoexplorer.io", .port = 0, .header = (char *) "", .cert_pem = algoexplorer_root_cert_pem_start};
 
 // Alice's account is used to send data, private key is taken from config/private_key.bin
-static account_info_t alice_account = {.public_b32 = { "E3PGTXKDOODVQ3E2ZB5PMJF2W3YOKIPUPLFDTESSP6562QE4GTLAKO4VXY"}, .private_key = {0}, .amount = 0};
+static account_info_t alice_account =
+    {.public_b32 = {"E3PGTXKDOODVQ3E2ZB5PMJF2W3YOKIPUPLFDTESSP6562QE4GTLAKO4VXY"},
+        .private_key = { 0 },
+        .amount = 0};
 // Bob is receiving the money 😎
 static account_info_t bob_account =
     {.public_b32 = "27J56E73WOFSEQUECLRCLRNBV3D74H7BYB7USEXCJOYPLBTACULABWMLVU", .private_key = {
@@ -69,7 +81,51 @@ vertices_evt_handler(vtc_evt_t *evt)
 
     switch (evt->type)
     {
-        default:ESP_LOGI(TAG, "Unhandled event: %u", evt->type);
+        case VTC_EVT_TX_READY_TO_SIGN:
+        {
+            signed_transaction_t *tx = NULL;
+            err_code = vertices_transaction_get(evt->bufid, &tx);
+            if (err_code == VTC_SUCCESS)
+            {
+                LOG_DEBUG("About to sign tx: data length %zu", tx->payload_length);
+
+                // libsodium wants to have private and public keys concatenated
+                unsigned char keys[crypto_sign_ed25519_SECRETKEYBYTES] = {0};
+                memcpy(keys, alice_account.private_key, sizeof(alice_account.private_key));
+                memcpy(&keys[32], alice_account.public_key, sizeof(alice_account.public_key));
+
+                // prepend "TX" to the payload before signing
+                unsigned char to_be_signed[tx->payload_length + 2];
+                to_be_signed[0] = 'T';
+                to_be_signed[1] = 'X';
+                memcpy(&to_be_signed[2], &tx->payload[tx->payload_offset], tx->payload_length);
+
+                // sign the payload
+                crypto_sign_ed25519_detached(tx->signature,
+                                             0, to_be_signed, tx->payload_length + 2, keys);
+
+                char b64_signature[128] = {0};
+                size_t b64_signature_len = sizeof(b64_signature);
+                b64_encode((const char *) tx->signature,
+                           sizeof(tx->signature),
+                           b64_signature,
+                           &b64_signature_len);
+                LOG_DEBUG("Signature %s (%zu bytes)", b64_signature, b64_signature_len);
+
+                // let's push the new state
+                evt->type = VTC_EVT_TX_SENDING;
+                err_code = vertices_event_schedule(evt);
+            }
+        }
+            break;
+
+        case VTC_EVT_TX_SENDING:
+        {
+            // nothing to be done on our side
+        }
+            break;
+
+        default:ESP_LOGW(TAG, "Unhandled event: %u", evt->type);
             break;
     }
 
@@ -107,45 +163,90 @@ vtc_wallet_task(void *param)
 
     // create accounts
     size_t alice_account_handle = 0;
-    err_code = vertices_add_account(&alice_account, &alice_account_handle);
+    err_code = vertices_account_add(&alice_account, &alice_account_handle);
     VTC_ASSERT(err_code);
 
-    ESP_LOGI(TAG, "🤑 %f Algos on Alice's account (%s)", alice_account.amount / 1.e6, alice_account.public_b32);
+    // we want at least 1.001 Algo available
+    while (alice_account.amount < 1001000)
+    {
+        ESP_LOGW(TAG,
+                 "🙄 %f Algos available on account. It's too low to pass a transaction, consider adding Algos", alice_account.amount / 1.e6);
+        ESP_LOGI(TAG, "👉 Go to https://bank.testnet.algorand.network/, dispense Algos to: %s",
+                 alice_account.public_b32);
+        ESP_LOGI(TAG, "😎 Then wait for a few seconds for transaction to pass...");
+        ESP_LOGI(TAG, "⏳ Retrying in 1 minute");
+
+        vTaskDelay(60000);
+
+        vertices_account_update(alice_account_handle);
+    }
+
+    ESP_LOGI(TAG,
+             "🤑 %f Algos on Alice's account (%s)",
+             alice_account.amount / 1.e6,
+             alice_account.public_b32);
 
     // creating a receiver account is not mandatory but we can use it to load the public key from the
     // base32-encoded string
     size_t bob_account_handle = 0;
-    err_code = vertices_add_account(&bob_account, &bob_account_handle);
+    err_code = vertices_account_add(&bob_account, &bob_account_handle);
     VTC_ASSERT(err_code);
 
-    if (alice_account.amount < 1001000)
-    {
-        // todo get amount on Alice account and retry later
+    // send assets from Alice's account to Bob's account
+    char notes[64] = {0};
+    size_t len = sprintf(notes, "Alice sent %f Algos to Bob", AMOUNT_SENT / 1.e6);
+    VTC_ASSERT_BOOL(len < 64);
 
-        ESP_LOGE(TAG,
-            "🙄 Amount available on account is too low to pass a transaction, consider adding Algos");
-        ESP_LOGI(TAG, "👉 Go to https://bank.testnet.algorand.network/, dispense Algos to: %s",
-                 alice_account.public_b32);
-        ESP_LOGI(TAG, "😎 Then wait for a few seconds for transaction to pass...");
-
-        while(1)
-        {
-            vTaskDelay(30000 / portTICK_RATE_MS);
-        }
-    }
+    err_code =
+        vertices_transaction_pay_new(alice_account_handle,
+                                     (char *) bob_account.public_key,
+                                     AMOUNT_SENT,
+                                     notes);
+    VTC_ASSERT(err_code);
 
     while (1)
     {
+        // processing queue
+        size_t queue_size = 1;
+        while (queue_size && err_code == VTC_SUCCESS)
+        {
+            err_code = vertices_event_process(&queue_size);
+        }
+
         if (err_code == VTC_SUCCESS)
         {
-            ESP_LOGI(TAG, "Wallet is alive");
+            ESP_LOGI(TAG, "💸 Alice sent %f algo to Bob", AMOUNT_SENT / 1.e6);
+
+            // delete the created accounts from the Vertices wallet
+            err_code = vertices_account_del(alice_account_handle);
+            VTC_ASSERT(err_code);
+
+            err_code = vertices_account_del(bob_account_handle);
+            VTC_ASSERT(err_code);
         }
         else
         {
-            ESP_LOGW(TAG, "Wallet is offline: 0x%x", err_code);
+            ESP_LOGE(TAG, "Error trying to send TX: 0x%x", err_code);
+            VTC_ASSERT(err_code);
         }
-        vTaskDelay(30000 / portTICK_RATE_MS);
+
+        // Delete the task
+        vTaskDelete(NULL);
     }
+}
+
+static void
+source_keys()
+{
+    memcpy(alice_account.private_key, signature_keys_start, ADDRESS_LENGTH);
+    memcpy(alice_account.public_key, &signature_keys_start[ADDRESS_LENGTH], ADDRESS_LENGTH);
+
+    ESP_LOGD(TAG, "Sourced keys: 0x%02x%02x%02x... 0x%02x%02x%02x...", alice_account.private_key[0],
+             alice_account.private_key[1],
+             alice_account.private_key[2],
+             alice_account.public_key[0],
+             alice_account.public_key[1],
+             alice_account.public_key[2]);
 }
 
 void
@@ -167,6 +268,8 @@ app_main(void)
      */
     ESP_ERROR_CHECK(example_connect());
     ESP_LOGI(TAG, "Connected to AP, begin http example");
+
+    source_keys();
 
     xTaskCreatePinnedToCore(&vtc_wallet_task, "vtc_wallet_task", 16000, NULL, 5, NULL, 1);
 }

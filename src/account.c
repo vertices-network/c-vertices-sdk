@@ -92,6 +92,18 @@ account_delete(size_t id)
 }
 
 ret_code_t
+account_update(size_t id)
+{
+    if (m_accounts[id].info == NULL)
+    {
+        return VTC_ERROR_INVALID_STATE;
+    }
+
+    // update account info
+    return provider_account_info_get(&m_accounts[id]);
+}
+
+ret_code_t
 account_init()
 {
     memset(m_accounts, 0, sizeof m_accounts);

@@ -52,7 +52,7 @@ http_post(const provider_info_t *provider,
           const char *body,
           size_t body_size,
           payload_t *response_buf,
-          long *response_code);
+          uint32_t *response_code);
 
 void
 http_close(void);

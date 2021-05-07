@@ -100,7 +100,7 @@ http_post(const provider_info_t *provider,
           const char *body,
           size_t body_size,
           payload_t *response_buf,
-          long *response_code)
+          uint32_t *response_code)
 {
     VTC_ASSERT_BOOL(m_curl != NULL);
 
@@ -155,7 +155,7 @@ http_post(const provider_info_t *provider,
         else
         {
             curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, response_code);
-            LOG_DEBUG("POST %s response %ld", url_full, *response_code);
+            LOG_DEBUG("POST %s response %u", url_full, *response_code);
 
             if (*response_code >= 300)
             {

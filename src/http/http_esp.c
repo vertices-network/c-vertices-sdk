@@ -74,7 +74,7 @@ http_event_handle(esp_http_client_event_t *evt)
 static void
 set_headers(const char *headers, size_t len)
 {
-    char header_copy[len+1];
+    char header_copy[len + 1];
     memcpy(header_copy, headers, len);
     header_copy[len] = 0;
 
@@ -82,27 +82,31 @@ set_headers(const char *headers, size_t len)
     int value_idx = 0;
     for (int i = 0; header_copy[i] != 0;)
     {
+        key_idx = i;
+
         while (header_copy[i] != ':')
         {
             ++i;
         }
         header_copy[i] = 0;
-        ++i;
+        while (header_copy[i] == ' ')
+        {
+            ++i;
+        };
         value_idx = i;
-        while(header_copy[i] != '\n' && header_copy[i] != '\r' && header_copy[i] != 0)
+        while (header_copy[i] != '\n' && header_copy[i] != '\r' && header_copy[i] != 0)
         {
             ++i;
         }
-        header_copy[i] = 0;
+
+        while (header_copy[i] == '\n' || header_copy[i] == '\r')
+        {
+            header_copy[i] = 0;
+            ++i;
+        }
 
         ESP_LOGI(TAG, "Adding header: %s: %s", &header_copy[key_idx], &header_copy[value_idx]);
         esp_http_client_set_header(m_client_handle, &header_copy[key_idx], &header_copy[value_idx]);
-
-        while(header_copy[i] == '\n' && header_copy[i] == '\r')
-        {
-            ++i;
-        }
-        key_idx = i;
     }
 }
 
@@ -197,7 +201,7 @@ http_post(const provider_info_t *provider,
           const char *body,
           size_t body_size,
           payload_t *response_buf,
-          long *response_code)
+          uint32_t *response_code)
 {
     esp_http_client_config_t config = {
         .host = provider->url,
@@ -207,7 +211,7 @@ http_post(const provider_info_t *provider,
         .buffer_size = response_buf->size,
         .disable_auto_redirect = true,
         .cert_pem = provider->cert_pem,
-        };
+    };
 
     if (m_client_handle == NULL)
     {
@@ -223,19 +227,35 @@ http_post(const provider_info_t *provider,
     // POST
     esp_http_client_set_method(m_client_handle, HTTP_METHOD_POST);
 
+    // url
+    char full_url[128] = {0};
+    size_t len = sprintf(full_url, "%s%s", provider->url, relative_path);
+    VTC_ASSERT_BOOL(len < 128);
+
+    esp_http_client_set_url(m_client_handle, full_url);
+
+    // headers
     set_headers(headers, strlen(headers));
 
+    // body
     esp_http_client_set_post_field(m_client_handle, body, (int) body_size);
+
+    // send
     esp_err_t err = esp_http_client_perform(m_client_handle);
     if (err == ESP_OK)
     {
+        *response_code = esp_http_client_get_status_code(m_client_handle);
+
+        LOG_DEBUG("POST %s response %u", full_url, *response_code);
+
         ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %d",
-                 esp_http_client_get_status_code(m_client_handle),
+                 *response_code,
                  esp_http_client_get_content_length(m_client_handle));
     }
     else
     {
         ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
+        return VTC_HTTP_ERROR + err;
     }
 
     return VTC_SUCCESS;

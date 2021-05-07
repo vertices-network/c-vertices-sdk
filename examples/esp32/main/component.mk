@@ -5,4 +5,9 @@
 
 # embed files from the "certs" directory as binary data symbols
 # in the app
-COMPONENT_EMBED_TXTFILES := howsmyssl_com_root_cert.pem postman_root_cert.pem
+COMPONENT_EMBED_TXTFILES := algoexplorer_root_cert.pem
+
+# this path is created relative to the component build directory
+SIGNATURE_KEYS := $(abspath private_key.bin)
+COMPONENT_EXTRA_CLEAN += $(SIGNATURE_KEYS)
+COMPONENT_EMBED_FILES := $(SIGNATURE_KEYS)

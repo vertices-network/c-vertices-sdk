@@ -24,7 +24,7 @@ typedef enum
 {
     VTC_EVT_TX_READY_TO_SIGN =
     0, ///< transaction's payload must be signed: the user must provide the signing function and emit the \c VTC_EVT_TX_READY_TO_SEND event.
-    VTC_EVT_TX_READY_TO_SEND, ///< transaction is ready to be sent to the blockchain API
+    VTC_EVT_TX_SENDING, ///< transaction is being sent to the blockchain API. When the user got the event, the transaction has probably been already sent.
     VTC_EVT_TX_SUCCESS, ///< transaction has been successfully sent and executed, after that event, the buffer is freed.
 } vtc_evt_type_t;
 

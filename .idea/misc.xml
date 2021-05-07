@@ -4,6 +4,7 @@
   <component name="CidrRootsConfiguration">
     <excludeRoots>
       <file path="$PROJECT_DIR$/examples/esp32/.pio" />
+      <file path="$PROJECT_DIR$/examples/esp32/build" />
     </excludeRoots>
   </component>
 </project>

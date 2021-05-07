@@ -205,12 +205,22 @@ provider_tx_post(const uint8_t *bin_payload, size_t length, unsigned char *tx_id
 {
     ret_code_t err_code;
 
+    // add provider-specific header if a value has been set
     char header[256] = {0};
-    int ret =
-        sprintf(header, "%s\r\nContent-Type: application/x-binary", m_provider.provider.header);
-    VTC_ASSERT_BOOL(ret < 128 && ret >= 0);
+    if (m_provider.provider.header == NULL || strlen(m_provider.provider.header) == 0)
+    {
+        int ret =
+            sprintf(header, "Content-Type: application/x-binary");
+        VTC_ASSERT_BOOL(ret < 128 && ret >= 0);
+    }
+    else
+    {
+        int ret =
+            sprintf(header, "%s\r\nContent-Type: application/x-binary", m_provider.provider.header);
+        VTC_ASSERT_BOOL(ret < 128 && ret >= 0);
+    }
 
-    long response_code = 0;
+    uint32_t response_code = 0;
     err_code =
         http_post(&m_provider.provider,
                   (char *) "/v2/transactions",
