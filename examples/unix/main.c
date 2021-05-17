@@ -136,7 +136,8 @@ source_keys(bool create_new)
     {
         LOG_INFO("🔑 Loading private key from: %s", CONFIG_PATH "private_key.bin");
 
-        bytes_read = fread(alice_account.private_key, 1, 64, f);
+        bytes_read = fread(alice_account.private_key, 1, ADDRESS_LENGTH, f);
+        bytes_read += fread(alice_account.public_key, 1, ADDRESS_LENGTH, f);
         fclose(f);
     }
 
@@ -176,7 +177,7 @@ source_keys(bool create_new)
     char public_key_checksum[36] = {0};
     memcpy(public_key_checksum, alice_account.public_key, sizeof(alice_account.public_key));
 
-    err_code = sha512_256(alice_account.public_key, sizeof(alice_account.public_key), checksum);
+    err_code = sha512_256(alice_account.public_key, sizeof(alice_account.public_key), checksum, sizeof(checksum));
     VTC_ASSERT(err_code);
 
     memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);

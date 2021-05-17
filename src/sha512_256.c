@@ -2,14 +2,18 @@
 // Created by Cyril on 16/04/2021.
 //
 
+#include <string.h>
 #include "sha512_256.h"
 #include "mbedtls/sha512.h"
 
 ret_code_t
-sha512_256(unsigned char const* input, unsigned long ilen, unsigned char *output)
+sha512_256(unsigned char const *input,
+           unsigned long ilen,
+           unsigned char *output,
+           unsigned long olen)
 {
     ret_code_t err_code = VTC_SUCCESS;
-    mbedtls_sha512_context ctx;
+    mbedtls_sha512_context ctx = {0};
 
     if (ilen == 0 || input == NULL || output == NULL)
     {
@@ -28,10 +32,30 @@ sha512_256(unsigned char const* input, unsigned long ilen, unsigned char *output
     ctx.state[6] = 0x2B0199FC2C85B8AA;
     ctx.state[7] = 0x0EB72DDC81C52CA2;
 
-    int ret = mbedtls_sha512_update_ret(&ctx, input, ilen);
+#if defined(SOC_SHA_SUPPORT_PARALLEL_ENG) && SOC_SHA_SUPPORT_PARALLEL_ENG
+    ctx.mode = ESP_MBEDTLS_SHA512_SOFTWARE;
+#endif
+
+    // copy input into 128-byte long array
+    // as 128 bytes are used in the input vector
+    unsigned char input_128[128] = {0};
+    memcpy(input_128, input, ilen);
+
+    int ret = mbedtls_sha512_update_ret(&ctx, input_128, ilen);
+
     if (ret == 0)
     {
-        ret = mbedtls_sha512_finish_ret(&ctx, output);
+        if (olen < 128)
+        {
+            unsigned char buffer_out[128] = {0};
+
+            ret = mbedtls_sha512_finish_ret(&ctx, buffer_out);
+            memcpy(output, buffer_out, olen);
+        }
+        else
+        {
+            ret = mbedtls_sha512_finish_ret(&ctx, output);
+        }
     }
 
     if (ret != 0)

@@ -12,6 +12,8 @@
 #include <base64.h>
 #include <sodium.h>
 #include <vertices_log.h>
+#include <sha512_256.h>
+#include <base32.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
@@ -59,7 +61,7 @@ static provider_info_t providers =
 
 // Alice's account is used to send data, private key is taken from config/private_key.bin
 static account_info_t alice_account =
-    {.public_b32 = {"E3PGTXKDOODVQ3E2ZB5PMJF2W3YOKIPUPLFDTESSP6562QE4GTLAKO4VXY"},
+    {.public_b32 = {""},
         .private_key = { 0 },
         .amount = 0};
 // Bob is receiving the money 😎
@@ -238,6 +240,7 @@ vtc_wallet_task(void *param)
 static void
 source_keys()
 {
+    // copy keys, first part is the private key and last part is the public key
     memcpy(alice_account.private_key, signature_keys_start, ADDRESS_LENGTH);
     memcpy(alice_account.public_key, &signature_keys_start[ADDRESS_LENGTH], ADDRESS_LENGTH);
 
@@ -247,6 +250,27 @@ source_keys()
              alice_account.public_key[0],
              alice_account.public_key[1],
              alice_account.public_key[2]);
+
+    unsigned char checksum[32] = {0};
+    char public_key_checksum[36] = {0};
+    memcpy(public_key_checksum, alice_account.public_key, sizeof(alice_account.public_key));
+
+    ret_code_t err_code = sha512_256(alice_account.public_key, sizeof(alice_account.public_key), checksum, sizeof(checksum));
+    VTC_ASSERT(err_code);
+
+    memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);
+
+    size_t size = 58;
+    memset(alice_account.public_b32,
+           0,
+           sizeof(alice_account.public_b32)); // make sure init to zeros (string)
+    err_code = b32_encode((const char *) public_key_checksum,
+                          sizeof(public_key_checksum),
+                          alice_account.public_b32,
+                          &size);
+    VTC_ASSERT(err_code);
+
+    ESP_LOGI(TAG, "💳 Alice's account %s", alice_account.public_b32);
 }
 
 void
