@@ -44,6 +44,12 @@ http_get(const provider_info_t *provider,
     CURLcode res;
     long response;
 
+    // reset buffer used in GET
+    if (response_buf != NULL)
+    {
+        response_buf->size = 0;
+    }
+
     char url_full[512] = {0};
     sprintf(url_full, "%s%s", provider->url, relative_path);
 
@@ -106,6 +112,12 @@ http_post(const provider_info_t *provider,
 
     ret_code_t err_code = VTC_SUCCESS;
     CURLcode res;
+
+    // reset buffer used in POST
+    if (response_buf != NULL)
+    {
+        response_buf->size = 0;
+    }
 
     char url_full[256] = {0};
     sprintf(url_full, "%s%s", provider->url, relative_path);

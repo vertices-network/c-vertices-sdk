@@ -148,6 +148,8 @@ http_get(const provider_info_t *provider,
 
     if (response_buf != NULL)
     {
+        // reset buffer used in GET
+        response_buf->size = 0;
         m_response_buf = response_buf;
     }
 
@@ -166,6 +168,8 @@ http_get(const provider_info_t *provider,
     char full_url[128] = {0};
     size_t len = sprintf(full_url, "%s%s", provider->url, relative_path);
     VTC_ASSERT_BOOL(len < 128);
+
+    LOG_DEBUG("GET %s", full_url);
 
     esp_http_client_set_url(m_client_handle, full_url);
 
@@ -203,6 +207,12 @@ http_post(const provider_info_t *provider,
           payload_t *response_buf,
           uint32_t *response_code)
 {
+    if (response_buf != NULL)
+    {
+        // reset buffer used in POST
+        response_buf->size = 0;
+    }
+
     esp_http_client_config_t config = {
         .host = provider->url,
         .path = relative_path,
