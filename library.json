@@ -1,6 +1,6 @@
 {
 	"name": "vertices-sdk",
-	"version": "0.1.6",
+	"version": "0.1.7",
 	"keywords": "algorand, blockchain, wallet, api",
 	"description": "Blockchain wallet library to create blockchain-enabled IoT devices. It supports the Algorand API.",
 	"repository": {
@@ -29,6 +29,13 @@
 			]
 		}
 	],
+	"dependencies": [
+		{
+			"name": "mpack",
+			"version": "1.0.0",
+			"platforms": "espressif32"
+		}
+    ],
 	"frameworks": "espidf",
 	"platforms": "espressif32"
 }
