@@ -1,12 +1,3 @@
-/* ESP HTTP Client Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
 #include <string.h>
 #include <stdlib.h>
 #include <base64.h>
@@ -27,9 +18,7 @@
 #include "esp_http_client.h"
 #include "vertices.h"
 
-#define MAX_HTTP_RECV_BUFFER 512
-#define MAX_HTTP_OUTPUT_BUFFER 2048
-static const char *TAG = "HTTP_CLIENT";
+static const char *TAG = "vertices_example";
 
 #ifndef AMOUNT_SENT
 #define AMOUNT_SENT 100
@@ -49,9 +38,11 @@ extern const char algoexplorer_root_cert_pem_end[] asm("_binary_algoexplorer_roo
 
 /***
  * The binary data is taken from a 64-byte binary file encapsulating the private and public keys
- * It has been generated using the Unix example available on the repo, using the \c -n flag
+ * in binary format.
+ * It has been generated using the Unix example available in the repo, using the \c -n flag:
  * $ ./unix_example -n
  * You can then copy \c private_key.bin into the example's \c main directory
+ * /!\ this is not a safe way to handle keys in production.
  */
 extern const uint8_t signature_keys_start[] asm("_binary_private_key_bin_start");
 extern const uint8_t signature_key_end[] asm("_binary_private_key_bin_end");
@@ -134,9 +125,48 @@ vertices_evt_handler(vtc_evt_t *evt)
     return err_code;
 }
 
-void
+static void
+source_keys()
+{
+    // copy keys, first part is the private key and last part is the public key
+    memcpy(alice_account.private_key, signature_keys_start, ADDRESS_LENGTH);
+    memcpy(alice_account.public_key, &signature_keys_start[ADDRESS_LENGTH], ADDRESS_LENGTH);
+
+    ESP_LOGD(TAG, "Sourced keys: 0x%02x%02x%02x... 0x%02x%02x%02x...", alice_account.private_key[0],
+             alice_account.private_key[1],
+             alice_account.private_key[2],
+             alice_account.public_key[0],
+             alice_account.public_key[1],
+             alice_account.public_key[2]);
+
+    // let's compute the Algorand public address
+    unsigned char checksum[32] = {0};
+    char public_key_checksum[36] = {0};
+    memcpy(public_key_checksum, alice_account.public_key, sizeof(alice_account.public_key));
+
+    ret_code_t err_code = sha512_256(alice_account.public_key, sizeof(alice_account.public_key), checksum, sizeof(checksum));
+    VTC_ASSERT(err_code);
+
+    memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);
+
+    size_t size = 58;
+    memset(alice_account.public_b32,
+           0,
+           sizeof(alice_account.public_b32)); // make sure init to zeros (string)
+    err_code = b32_encode((const char *) public_key_checksum,
+                          sizeof(public_key_checksum),
+                          alice_account.public_b32,
+                          &size);
+    VTC_ASSERT(err_code);
+
+    ESP_LOGI(TAG, "💳 Alice's account %s", alice_account.public_b32);
+}
+
+_Noreturn void
 vtc_wallet_task(void *param)
 {
+    source_keys();
+
     // create new vertex
     ret_code_t err_code = vertices_new(&m_vertex);
     VTC_ASSERT(err_code);
@@ -237,42 +267,6 @@ vtc_wallet_task(void *param)
     }
 }
 
-static void
-source_keys()
-{
-    // copy keys, first part is the private key and last part is the public key
-    memcpy(alice_account.private_key, signature_keys_start, ADDRESS_LENGTH);
-    memcpy(alice_account.public_key, &signature_keys_start[ADDRESS_LENGTH], ADDRESS_LENGTH);
-
-    ESP_LOGD(TAG, "Sourced keys: 0x%02x%02x%02x... 0x%02x%02x%02x...", alice_account.private_key[0],
-             alice_account.private_key[1],
-             alice_account.private_key[2],
-             alice_account.public_key[0],
-             alice_account.public_key[1],
-             alice_account.public_key[2]);
-
-    unsigned char checksum[32] = {0};
-    char public_key_checksum[36] = {0};
-    memcpy(public_key_checksum, alice_account.public_key, sizeof(alice_account.public_key));
-
-    ret_code_t err_code = sha512_256(alice_account.public_key, sizeof(alice_account.public_key), checksum, sizeof(checksum));
-    VTC_ASSERT(err_code);
-
-    memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);
-
-    size_t size = 58;
-    memset(alice_account.public_b32,
-           0,
-           sizeof(alice_account.public_b32)); // make sure init to zeros (string)
-    err_code = b32_encode((const char *) public_key_checksum,
-                          sizeof(public_key_checksum),
-                          alice_account.public_b32,
-                          &size);
-    VTC_ASSERT(err_code);
-
-    ESP_LOGI(TAG, "💳 Alice's account %s", alice_account.public_b32);
-}
-
 void
 app_main(void)
 {
@@ -292,8 +286,6 @@ app_main(void)
      */
     ESP_ERROR_CHECK(example_connect());
     ESP_LOGI(TAG, "Connected to AP, begin http example");
-
-    source_keys();
 
     xTaskCreatePinnedToCore(&vtc_wallet_task, "vtc_wallet_task", 16000, NULL, 5, NULL, 1);
 }
