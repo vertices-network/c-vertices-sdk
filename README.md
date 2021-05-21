@@ -8,10 +8,10 @@ We are doing our best to achieve those goals:
 
 - C library, can be included into C++ projects.
 - Can be easily imported into any project
-- Examples that will be provided:
+- Examples provided:
   - [Unix-based OSes](examples/unix)
-  - ESP-IDF
-  - Zephyr
+  - [ESP-IDF](examples/esp32)
+  - Zephyr (soon)
 - Connect to any Algorand API (local or remote provider)
 - Build with CMake and Make
 - Continuous Integration to maintain code quality:
@@ -107,7 +107,7 @@ make unix_example
 
 ### Examples
 
-The example running on Unix is ready to be tested, [checkout the Readme](examples/unix/README.md).
+Full documentation is available at [docs.vertices.network](https://docs.vertices.network/).
 
 ## 📐 Tests
 
