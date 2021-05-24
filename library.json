@@ -1,0 +1,41 @@
+{
+	"name": "vertices-sdk",
+	"version": "0.1.7",
+	"keywords": "algorand, blockchain, wallet, api",
+	"description": "Blockchain wallet library to create blockchain-enabled IoT devices. It supports the Algorand API.",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/vertices-network/c-vertices-sdk.git"
+	},
+	"authors": [
+		{
+			"name": "Vertices Network",
+			"email": "team@vertices.network",
+			"url": "https://vertices.network"
+		}
+	],
+	"build": {
+		"flags": ["-I src/include", "-DBLOCKCHAIN_PROVIDER=algorand"],
+		"srcFilter": ["+<*/*.c>", "+<*.c>", "+<*/*.h>", "+<http/http_esp.c>", "-<http/http_curl.c>"]
+	},
+	"examples": [
+		{
+			"name": "esp32_example",
+			"base": "examples/esp32",
+			"files": [
+				"platformio.ini",
+				"main/esp32_example.c",
+				"README.md"
+			]
+		}
+	],
+	"dependencies": [
+		{
+			"name": "mpack",
+			"version": "1.0.0",
+			"platforms": "espressif32"
+		}
+    ],
+	"frameworks": "espidf",
+	"platforms": "espressif32"
+}

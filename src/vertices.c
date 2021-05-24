@@ -36,15 +36,21 @@ vertices_ping()
 }
 
 ret_code_t
-vertices_add_account(account_info_t *account, size_t *account_id)
+vertices_account_add(account_info_t *account, size_t *account_id)
 {
     return account_add(account, account_id);
 }
 
 ret_code_t
-vertices_del_account(size_t account_handle)
+vertices_account_del(size_t account_handle)
 {
     return account_delete(account_handle);
+}
+
+ret_code_t
+vertices_account_update(size_t account_handle)
+{
+    return account_update(account_handle);
 }
 
 ret_code_t
@@ -89,6 +95,10 @@ vertices_event_process(size_t * queue_size)
 
     if (event_queue_size() == 0)
     {
+        if (queue_size != NULL)
+        {
+            *queue_size = event_queue_size();
+        }
         return VTC_SUCCESS;
     }
 
@@ -98,7 +108,7 @@ vertices_event_process(size_t * queue_size)
         switch (m_events_queue.evt[m_events_queue.rd_index].type)
         {
             case VTC_EVT_TX_READY_TO_SIGN:break;
-            case VTC_EVT_TX_READY_TO_SEND:
+            case VTC_EVT_TX_SENDING:
             {
                 err_code =
                     transaction_pending_send(m_events_queue.evt[m_events_queue.rd_index].bufid);

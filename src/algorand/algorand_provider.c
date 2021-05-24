@@ -26,12 +26,23 @@ response_payload_callback(void *received_data, size_t size, size_t count, void *
 
     VTC_ASSERT_BOOL(received_data_size < HTTP_MAXIMUM_CONTENT_LENGTH);
 
-    payload_t *payload = (payload_t *) response_payload;
-    payload->data = rx_buf;
-    payload->size = received_data_size;
+    if (response_payload != NULL)
+    {
+        payload_t *payload = (payload_t *) response_payload;
 
-    memcpy(rx_buf, received_data, received_data_size);
-    rx_buf[received_data_size] = 0;
+        // append in buffer
+        memcpy(&rx_buf[payload->size], received_data, received_data_size);
+
+        payload->data = rx_buf;
+        payload->size += received_data_size;
+
+        rx_buf[payload->size] = 0;
+    }
+    else
+    {
+        memcpy(rx_buf, received_data, received_data_size);
+        rx_buf[received_data_size] = 0;
+    }
 
     LOG_DEBUG("%s", rx_buf);
 
@@ -74,7 +85,7 @@ parse_accounts_msgpack(account_details_t *account, char *buf, size_t len)
     mpack_reader_init_data(&reader, buf, len);
 
     mpack_tag_t tag = mpack_read_tag(&reader);
-    if (mpack_reader_error(&reader) != mpack_ok)
+    if (mpack_reader_error(&reader) != mpack_ok || tag.type == mpack_type_nil)
     {
         return VTC_ERROR_INTERNAL;
     }
@@ -202,12 +213,22 @@ provider_tx_post(const uint8_t *bin_payload, size_t length, unsigned char *tx_id
 {
     ret_code_t err_code;
 
+    // add provider-specific header if a value has been set
     char header[256] = {0};
-    int ret =
-        sprintf(header, "%s\r\nContent-Type: application/x-binary", m_provider.provider.header);
-    VTC_ASSERT_BOOL(ret < 128 && ret >= 0);
+    if (m_provider.provider.header == NULL || strlen(m_provider.provider.header) == 0)
+    {
+        int ret =
+            sprintf(header, "Content-Type: application/x-binary");
+        VTC_ASSERT_BOOL(ret < 128 && ret >= 0);
+    }
+    else
+    {
+        int ret =
+            sprintf(header, "%s\r\nContent-Type: application/x-binary", m_provider.provider.header);
+        VTC_ASSERT_BOOL(ret < 128 && ret >= 0);
+    }
 
-    long response_code = 0;
+    uint32_t response_code = 0;
     err_code =
         http_post(&m_provider.provider,
                   (char *) "/v2/transactions",
@@ -363,6 +384,7 @@ provider_init(provider_info_t *provider)
     m_provider.provider.url = provider->url;
     m_provider.provider.port = provider->port;
     m_provider.provider.header = provider->header;
+    m_provider.provider.cert_pem = provider->cert_pem;
 
     m_provider.response_payload_cb = response_payload_callback;
 

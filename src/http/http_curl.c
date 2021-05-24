@@ -33,7 +33,7 @@ http_init(const provider_info_t *provider,
 
 ret_code_t
 http_get(const provider_info_t *provider,
-         char *relative_path,
+         const char *relative_path,
          const char *headers,
          payload_t *response_buf,
          uint32_t *response_code)
@@ -43,6 +43,12 @@ http_get(const provider_info_t *provider,
     ret_code_t err_code = VTC_SUCCESS;
     CURLcode res;
     long response;
+
+    // reset buffer used in GET
+    if (response_buf != NULL)
+    {
+        response_buf->size = 0;
+    }
 
     char url_full[512] = {0};
     sprintf(url_full, "%s%s", provider->url, relative_path);
@@ -95,17 +101,23 @@ http_get(const provider_info_t *provider,
 
 ret_code_t
 http_post(const provider_info_t *provider,
-          char *relative_path,
+          const char *relative_path,
           char *headers,
           const char *body,
           size_t body_size,
           payload_t *response_buf,
-          long *response_code)
+          uint32_t *response_code)
 {
     VTC_ASSERT_BOOL(m_curl != NULL);
 
     ret_code_t err_code = VTC_SUCCESS;
     CURLcode res;
+
+    // reset buffer used in POST
+    if (response_buf != NULL)
+    {
+        response_buf->size = 0;
+    }
 
     char url_full[256] = {0};
     sprintf(url_full, "%s%s", provider->url, relative_path);
@@ -155,7 +167,7 @@ http_post(const provider_info_t *provider,
         else
         {
             curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, response_code);
-            LOG_DEBUG("POST %s response %ld", url_full, *response_code);
+            LOG_DEBUG("POST %s response %u", url_full, *response_code);
 
             if (*response_code >= 300)
             {

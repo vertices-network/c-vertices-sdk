@@ -12,7 +12,10 @@ extern "C" {
 #endif
 
 ret_code_t
-sha512_256(unsigned char const *input, unsigned long ilen, unsigned char *output);
+sha512_256(unsigned char const *input,
+           unsigned long ilen,
+           unsigned char *output,
+           unsigned long olen);
 
 #ifdef __cplusplus
 }

@@ -14,7 +14,7 @@
 /// 2 <-> Warning level
 /// 1 <-> Error level
 #ifndef VTC_LOG_LEVEL
-#define VTC_LOG_LEVEL 3 // default log level is to print info data
+#define VTC_LOG_LEVEL 4 // default log level is to print info data
 #endif
 
 /// Number of events that can be queued, must be a power of 2
@@ -23,9 +23,9 @@
 #define VTC_EVENTS_COUNT 16
 #endif
 
-static_assert(VTC_EVENTS_COUNT == 2 || VTC_EVENTS_COUNT == 4 || VTC_EVENTS_COUNT == 8
-                  || VTC_EVENTS_COUNT == 16 || VTC_EVENTS_COUNT == 32 || VTC_EVENTS_COUNT == 64,
-              "VTC_EVENTS_COUNT must be a power of 2, make sure to change the assert if you want to have more than 64 events in the queue.");
+//static_assert(VTC_EVENTS_COUNT == 2 || VTC_EVENTS_COUNT == 4 || VTC_EVENTS_COUNT == 8
+//                  || VTC_EVENTS_COUNT == 16 || VTC_EVENTS_COUNT == 32 || VTC_EVENTS_COUNT == 64,
+//              "VTC_EVENTS_COUNT must be a power of 2, make sure to change the assert if you want to have more than 64 events in the queue.");
 
 /// Optional information passed in transactions
 #ifndef OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES

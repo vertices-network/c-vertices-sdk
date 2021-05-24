@@ -20,10 +20,13 @@ ret_code_t
 vertices_ping(void);
 
 ret_code_t
-vertices_add_account(account_info_t *account, size_t *account_id);
+vertices_account_add(account_info_t *account, size_t *account_id);
 
 ret_code_t
-vertices_del_account(size_t account_handle);
+vertices_account_del(size_t account_handle);
+
+ret_code_t
+vertices_account_update(size_t account_handle);
 
 /// Send tokens
 /// \param account_id Handle to the Sender account
