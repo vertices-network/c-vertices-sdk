@@ -142,7 +142,7 @@ http_get(const provider_info_t *provider,
         .event_handler = http_event_handle,
         .user_data = response_buf->data,        // Pass address of local buffer to get response
         .buffer_size = response_buf->size,
-        .disable_auto_redirect = true,
+        .disable_auto_redirect = false,
         .cert_pem = provider->cert_pem,
     };
 
