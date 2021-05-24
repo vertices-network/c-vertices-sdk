@@ -285,7 +285,7 @@ app_main(void)
      * examples/protocols/README.md for more information about this function.
      */
     ESP_ERROR_CHECK(example_connect());
-    ESP_LOGI(TAG, "Connected to AP, begin http example");
+    ESP_LOGI(TAG, "Connected to AP, begin Vertices example");
 
     xTaskCreatePinnedToCore(&vtc_wallet_task, "vtc_wallet_task", 16000, NULL, 5, NULL, 1);
 }
