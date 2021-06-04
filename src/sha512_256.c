@@ -32,8 +32,16 @@ sha512_256(unsigned char const *input,
     ctx.state[6] = 0x2B0199FC2C85B8AA;
     ctx.state[7] = 0x0EB72DDC81C52CA2;
 
-#if defined(SOC_SHA_SUPPORT_PARALLEL_ENG) && SOC_SHA_SUPPORT_PARALLEL_ENG
-    ctx.mode = ESP_MBEDTLS_SHA512_SOFTWARE;
+    // On ESP32, only the software implementation is working so far
+    // TODO make the sha512_256 implementation work using hardware peripheral
+#if defined(ESP_IDF_VERSION) && defined(ESP_IDF_VERSION_VAL)
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
+        #if (defined(SOC_SHA_SUPPORT_PARALLEL_ENG) && SOC_SHA_SUPPORT_PARALLEL_ENG )
+            ctx.mode = ESP_MBEDTLS_SHA512_SOFTWARE;
+        #endif
+    #elif CONFIG_IDF_TARGET_ESP32
+        ctx.mode = ESP_MBEDTLS_SHA512_SOFTWARE;
+    #endif
 #endif
 
     // copy input into 128-byte long array
