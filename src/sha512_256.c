@@ -5,6 +5,7 @@
 #include <string.h>
 #include "sha512_256.h"
 #include "mbedtls/sha512.h"
+#include "esp_idf_version.h"
 
 ret_code_t
 sha512_256(unsigned char const *input,
