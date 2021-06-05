@@ -5,9 +5,10 @@
 #include <vertices_log.h>
 #include "vertices_errors.h"
 #include <http.h>
-#include <mpack-reader.h>
 #include <transaction.h>
 #include <base64.h>
+#include <parser.h>
+#include <string.h>
 #include "provider.h"
 #include "cJSON.h"
 
@@ -44,84 +45,13 @@ response_payload_callback(void *received_data, size_t size, size_t count, void *
         rx_buf[received_data_size] = 0;
     }
 
+    // might not be full ascii, so weird things can be printed
+    // todo consider removing it or printing hex dump
     LOG_DEBUG("%s", rx_buf);
 
     return received_data_size;
 }
 
-static ret_code_t
-parse_account_field(mpack_reader_t *reader, const char *field, account_details_t *account)
-{
-    ret_code_t err_code = VTC_SUCCESS;
-
-    mpack_tag_t value = mpack_read_tag(reader);
-
-    if (strncmp(field, "algo", sizeof "algo" - 1) == 0)
-    {
-        account->info->amount = (int32_t) mpack_tag_uint_value(&value);
-    }
-    else if (strncmp(field, "ebase", sizeof "ebase" - 1) == 0)
-    {
-        account->reward_base = (int32_t) mpack_tag_uint_value(&value);
-    }
-    else if (strncmp(field, "ern", sizeof "ern" - 1) == 0)
-    {
-        account->rewards = (int32_t) mpack_tag_uint_value(&value);
-    }
-    else
-    {
-        err_code = VTC_ERROR_NOT_FOUND;
-    }
-
-    return err_code;
-}
-
-/// parse MessagePack data for `/accounts` response
-static ret_code_t
-parse_accounts_msgpack(account_details_t *account, char *buf, size_t len)
-{
-    // we are reading messagepack data
-    mpack_reader_t reader;
-    mpack_reader_init_data(&reader, buf, len);
-
-    mpack_tag_t tag = mpack_read_tag(&reader);
-    if (mpack_reader_error(&reader) != mpack_ok || tag.type == mpack_type_nil)
-    {
-        return VTC_ERROR_INTERNAL;
-    }
-
-    // response to /account is a map with different optional fields
-    // see https://developer.algorand.org/docs/reference/rest-apis/algod/v2/#account
-    // `algo`, `appl`, `tsch`, `ebase` ... etc
-
-    // Parse the map containing `count` elements
-    if (mpack_tag_type(&tag) == mpack_type_map)
-    {
-        uint32_t count = mpack_tag_map_count(&tag);
-
-        for (uint32_t i = 0; i < count; ++i)
-        {
-            mpack_tag_t mapped_tag = mpack_read_tag(&reader);
-
-            // elements are `string` followed by `value`
-            if (mpack_tag_type(&mapped_tag) == mpack_type_str)
-            {
-                uint32_t length = mpack_tag_str_length(&mapped_tag);
-                // data is the pointer to the value
-                const char *data = mpack_read_bytes_inplace(&reader, length);
-
-                ret_code_t err_code = parse_account_field(&reader, data, account);
-                VTC_ASSERT(err_code);
-            }
-        }
-
-        mpack_done_map(&reader);
-    }
-
-    VTC_ASSERT_BOOL(mpack_reader_destroy(&reader) == mpack_ok);
-
-    return VTC_SUCCESS;
-}
 
 ret_code_t
 provider_account_info_get(account_details_t *account)
@@ -138,7 +68,7 @@ provider_account_info_get(account_details_t *account)
                                    &m_provider.response_buffer, &response_code);
     if (err_code == VTC_SUCCESS)
     {
-        parse_accounts_msgpack(account, rx_buf, m_provider.response_buffer.size);
+        parser_account(rx_buf, m_provider.response_buffer.size, account);
     }
 
     return err_code;

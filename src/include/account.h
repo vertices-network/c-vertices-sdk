@@ -36,6 +36,25 @@ typedef struct
 
 typedef struct
 {
+    char name[APPS_KV_NAME_MAX_LENGTH]; //!< variable name, ascii, can contains up to 8 bytes
+    uint8_t type; //!< type [tt], 1: slice; 2: integer
+    union
+    {
+        uint64_t value_uint;
+        uint8_t value_slice[8];
+    };
+} apps_local_key_value_t;
+
+typedef struct
+{
+    // https://developer.algorand.org/docs/reference/rest-apis/algod/v2/#applicationlocalstate
+    uint64_t app_id; //!< app ID
+    uint32_t kv_idx;  //!< stored variables count
+    apps_local_key_value_t kv[APPS_KV_MAX_COUNT]; //<! Variables
+} apps_local_state_t;
+
+typedef struct
+{
     account_info_t *info;
     int32_t round; // The round for which this information is relevant.
     int32_t
@@ -48,6 +67,8 @@ typedef struct
     sig_type_t
         sig_type; // sig-type string -> enum - Indicates what type of signature is used by this account, must be one of:
     account_participation_t participation;
+    uint32_t app_idx;
+    apps_local_state_t apps_local[APPS_MAX_COUNT];
 } account_details_t;
 
 ret_code_t

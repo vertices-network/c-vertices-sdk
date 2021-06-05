@@ -14,7 +14,7 @@ typedef enum
     ALGORAND_ASSET_CONFIGURATION_TRANSACTION,
     ALGORAND_ASSET_TRANSFER_TRANSACTION,
     ALGORAND_ASSET_FREEZE_TRANSACTION,
-    ALGORAND_APPLICATION_CALL_TRANSATION,
+    ALGORAND_APPLICATION_CALL_TRANSACTION,
 } tx_type_t;
 
 typedef struct
@@ -27,16 +27,26 @@ typedef struct
 
 typedef struct
 {
+    uint64_t app_id; ///< "apid" ID of the application being configured or empty if creating.
+    uint64_t on_complete; ///< "apan" Defines what additional actions occur with the transaction. See the OnComplete section of the TEAL spec for details (https://developer.algorand.org/docs/reference/teal/specification/#oncomplete).
+    // uint8_t receiver[ADDRESS_LENGTH]; ///< "apap" Logic executed for every application transaction, except when on-completion is set to "clear". It can read and write global state for the application, as well as account-specific local state. Approval programs may reject the transaction.
+    uint8_t app_args[APP_ARGS_MAX_LENGTH]; ///< "apaa" Transaction specific arguments accessed from the application's approval-program and clear-state-program.
+    size_t app_args_size; ///< used size within \c app_args
+} appl_tx_t;
+
+typedef struct
+{
     uint64_t
         first_valid; ///< The first round for when the transaction is valid. If the transaction is sent prior to this round it will be rejected by the network.
     uint64_t
         last_valid; ///< The ending round for which the transaction is valid. After this round, the transaction will be rejected by the network.
     tx_type_t tx_type; ///< Specifies the type of transaction.
     char * note; ///< (opt) Any data up to 1000 bytes.
-    union
+    union transaction
     {
-        payment_tx_t payment_tx;
-    };
+        payment_tx_t pay;
+        appl_tx_t appl;
+    } tx;
 } transaction_details_t;
 
 #endif //VERTICES_SDK_LIB_INC_TRANSACTION_ALGORAND_H
