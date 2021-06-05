@@ -5,7 +5,10 @@
 #include <string.h>
 #include "sha512_256.h"
 #include "mbedtls/sha512.h"
+
+#if defined(COMPILE_ESP) || defined(ESP_PLATFORM)
 #include "esp_idf_version.h"
+#endif
 
 ret_code_t
 sha512_256(unsigned char const *input,
