@@ -17,6 +17,16 @@ typedef enum
     ALGORAND_APPLICATION_CALL_TRANSACTION,
 } tx_type_t;
 
+typedef enum
+{
+    ALGORAND_ON_COMPLETE_NOOP = 0,
+    ALGORAND_ON_COMPLETE_OPT_IN,
+    ALGORAND_ON_COMPLETE_CLOSE_OUT,
+    ALGORAND_ON_COMPLETE_CLEAR_STATE,
+    ALGORAND_ON_COMPLETE_UPDATE_APP,
+    ALGORAND_ON_COMPLETE_DELETE_APP
+} tx_on_complete_t;
+
 typedef struct
 {
     uint8_t receiver[ADDRESS_LENGTH]; ///< The address of the account that receives the amount.
@@ -28,10 +38,9 @@ typedef struct
 typedef struct
 {
     uint64_t app_id; ///< "apid" ID of the application being configured or empty if creating.
-    uint64_t on_complete; ///< "apan" Defines what additional actions occur with the transaction. See the OnComplete section of the TEAL spec for details (https://developer.algorand.org/docs/reference/teal/specification/#oncomplete).
+    tx_on_complete_t on_complete; ///< "apan" Defines what additional actions occur with the transaction. See the OnComplete section of the TEAL spec for details (https://developer.algorand.org/docs/reference/teal/specification/#oncomplete).
     // uint8_t receiver[ADDRESS_LENGTH]; ///< "apap" Logic executed for every application transaction, except when on-completion is set to "clear". It can read and write global state for the application, as well as account-specific local state. Approval programs may reject the transaction.
-    uint8_t app_args[APP_ARGS_MAX_LENGTH]; ///< "apaa" Transaction specific arguments accessed from the application's approval-program and clear-state-program.
-    size_t app_args_size; ///< used size within \c app_args
+    app_values_t *key_values; ///< "apaa" Transaction specific arguments accessed from the application's approval-program and clear-state-program.
 } appl_tx_t;
 
 typedef struct

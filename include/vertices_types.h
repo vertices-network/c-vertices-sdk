@@ -32,6 +32,7 @@
 #define APPS_MAX_COUNT                  3   //!< Maximum number of applications per account
 #define APPS_KV_MAX_COUNT               8   //!< Key-Value maximum count
 #define APPS_KV_NAME_MAX_LENGTH         8   //!< Key maximum length (ASCII-encoded)
+#define APPS_KV_SLICE_MAX_SIZE          8   //!< Byte slice maximum length
 #define APP_ARGS_MAX_LENGTH             128 //!<
 
 
@@ -67,6 +68,30 @@ typedef struct
     unsigned char public_key[ADDRESS_LENGTH]; // 32-bytes public key
     int32_t amount; // tokens on account
 } account_info_t;
+
+typedef enum
+{
+    VALUE_TYPE_NONE = 0,
+    VALUE_TYPE_BYTESLICE,
+    VALUE_TYPE_INTEGER,
+} value_type_t;
+
+typedef struct
+{
+    char name[APPS_KV_NAME_MAX_LENGTH]; //!< variable name, ASCII-encoded, can contains up to APPS_KV_NAME_MAX_LENGTH bytes
+    value_type_t type; //!< type [tt]
+    union
+    {
+        uint64_t value_uint;
+        uint8_t value_slice[APPS_KV_SLICE_MAX_SIZE];
+    };
+} app_key_value_t;
+
+typedef struct
+{
+    uint32_t count;
+    app_key_value_t values[APPS_KV_MAX_COUNT];
+} app_values_t;
 
 typedef struct
 {

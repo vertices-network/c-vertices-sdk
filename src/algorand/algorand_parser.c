@@ -156,26 +156,26 @@ uint_element(void *context, uint64_t value)
 
             case FIELD_APP_KV_TYPE:
             {
-                uint32_t idx = account->apps_local[account->app_idx].kv_idx;
+                uint32_t idx = account->apps_local[account->app_idx].key_values.count;
                 if (idx > APPS_KV_MAX_COUNT)
                 {
                     return VTC_ERROR_NO_MEM;
                 }
 
-                account->apps_local[account->app_idx].kv[idx].type = (uint8_t) value;
+                account->apps_local[account->app_idx].key_values.values[idx].type = (uint8_t) value;
                 m_parsing_account_step = FIELD_APP_KV_VAR;
             }
                 break;
 
             case FIELD_APP_KV_VALUE_INT:
             {
-                uint32_t idx = account->apps_local[account->app_idx].kv_idx;
+                uint32_t idx = account->apps_local[account->app_idx].key_values.count;
                 if (idx > APPS_KV_MAX_COUNT)
                 {
                     return VTC_ERROR_NO_MEM;
                 }
 
-                account->apps_local[account->app_idx].kv[idx].value_uint = value;
+                account->apps_local[account->app_idx].key_values.values[idx].value_uint = value;
                 m_parsing_account_step = FIELD_APP_KV_VAR;
             }
                 break;
@@ -283,7 +283,7 @@ string_element(void *context, const char *data, uint32_t length)
     else if (m_parsing_account_step == FIELD_APP_KV)
     {
         account_details_t *account = (account_details_t *) context;
-        uint32_t kv_idx = account->apps_local[account->app_idx].kv_idx;
+        uint32_t kv_idx = account->apps_local[account->app_idx].key_values.count;
 
         if (kv_idx >= APPS_KV_MAX_COUNT)
         {
@@ -291,8 +291,8 @@ string_element(void *context, const char *data, uint32_t length)
             err_code = VTC_ERROR_NO_MEM;
         }
 
-        memset(account->apps_local[account->app_idx].kv[kv_idx].name, 0, APPS_KV_NAME_MAX_LENGTH);
-        memcpy(account->apps_local[account->app_idx].kv[kv_idx].name,
+        memset(account->apps_local[account->app_idx].key_values.values[kv_idx].name, 0, APPS_KV_NAME_MAX_LENGTH);
+        memcpy(account->apps_local[account->app_idx].key_values.values[kv_idx].name,
                data,
                length < (APPS_KV_NAME_MAX_LENGTH - 1) ? length : (APPS_KV_NAME_MAX_LENGTH - 1));
 
@@ -354,7 +354,7 @@ finish_map(void *context)
         // increase key-value index
 
         account_details_t *account = (account_details_t *) context;
-        account->apps_local[account->app_idx].kv_idx++;
+        account->apps_local[account->app_idx].key_values.count++;
 
         m_parsing_account_step = FIELD_APP_KV;
     }

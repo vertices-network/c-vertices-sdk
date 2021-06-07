@@ -60,6 +60,12 @@ vertices_transaction_pay_new(size_t account_id, char *receiver, uint64_t amount,
 }
 
 ret_code_t
+vertices_transaction_app_call(size_t account_id, uint64_t app_id, void *params)
+{
+    return transaction_appl(account_id, app_id, params);
+}
+
+ret_code_t
 vertices_transaction_get(size_t bufid, signed_transaction_t **tx)
 {
     return transaction_get(bufid, tx);
@@ -119,7 +125,7 @@ vertices_event_process(size_t * queue_size)
 
         if (err_code != VTC_SUCCESS)
         {
-            LOG_ERROR("Pre-processing failed. Type: %u, Error: %u",
+            LOG_ERROR("Pre-processing failed. Type: %u, Error: %x",
                       m_events_queue.evt[m_events_queue.rd_index].type,
                       err_code);
             return err_code;
@@ -132,7 +138,7 @@ vertices_event_process(size_t * queue_size)
 
             if (err_code != VTC_SUCCESS)
             {
-                LOG_ERROR("User-processing failed. Type: %u, Error: %u",
+                LOG_ERROR("User-processing failed. Type: %u, Error: %x",
                           m_events_queue.evt[m_events_queue.rd_index].type,
                           err_code);
                 return err_code;
