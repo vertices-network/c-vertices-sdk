@@ -7,6 +7,7 @@
 
 #include <vertices_types.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 typedef enum sig_type_e
 {
@@ -36,21 +37,9 @@ typedef struct
 
 typedef struct
 {
-    char name[APPS_KV_NAME_MAX_LENGTH]; //!< variable name, ascii, can contains up to 8 bytes
-    uint8_t type; //!< type [tt], 1: slice; 2: integer
-    union
-    {
-        uint64_t value_uint;
-        uint8_t value_slice[8];
-    };
-} apps_local_key_value_t;
-
-typedef struct
-{
     // https://developer.algorand.org/docs/reference/rest-apis/algod/v2/#applicationlocalstate
     uint64_t app_id; //!< app ID
-    uint32_t kv_idx;  //!< stored variables count
-    apps_local_key_value_t kv[APPS_KV_MAX_COUNT]; //<! Variables
+    app_values_t key_values; //!< stored variables
 } apps_local_state_t;
 
 typedef struct
@@ -76,6 +65,9 @@ account_add(account_info_t *account, size_t *id);
 
 ret_code_t
 account_get_addr(size_t id, char *addr);
+
+bool
+account_has_app(size_t id, uint64_t app_id);
 
 ret_code_t
 account_delete(size_t id);
