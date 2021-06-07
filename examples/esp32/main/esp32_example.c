@@ -236,6 +236,15 @@ vtc_wallet_task(void *param)
                                      notes);
     VTC_ASSERT(err_code);
 
+    // send application call
+    app_values_t kv = {0};
+    kv.count = 1;
+    kv.values[0].type = VALUE_TYPE_INTEGER;
+    kv.values[0].value_uint = 32;
+
+    err_code = vertices_transaction_app_call(alice_account_handle, 16037129, &kv);
+    VTC_ASSERT(err_code);
+
     while (1)
     {
         // processing queue
