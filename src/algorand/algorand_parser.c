@@ -6,7 +6,7 @@
 #include <vertices_log.h>
 #include "parser.h"
 
-// define DEBUG_PARSER to enable maximum verbosity and make the parser fail on error
+//#define DEBUG_PARSER // to enable maximum verbosity and make the parser fail on error
 #ifndef DEBUG_PARSER
 #undef LOG_DEBUG
 #define LOG_DEBUG(...)
@@ -40,6 +40,7 @@ typedef enum
     FIELD_ROOT = 0, //!< starting point, root of map
     FIELD_ALGO,
     FIELD_APPL,
+    FIELD_APPL_ID,
     FIELD_APP_SCH, //!< app schema
     FIELD_APP_SCH_NUI, //!< integer count
     FIELD_APP_SCH_NBS, //!< slice count
@@ -130,6 +131,7 @@ uint_element(void *context, uint64_t value)
                 if (account->app_idx < APPS_MAX_COUNT)
                 {
                     account->apps_local[account->app_idx].app_id = value;
+                    m_parsing_account_step = FIELD_APPL_ID;
                 }
                 else
                 {
@@ -248,7 +250,7 @@ string_element(void *context, const char *data, uint32_t length)
     }
 
     // check that we are parsing application fields
-    if (m_parsing_account_step == FIELD_APPL)
+    if (m_parsing_account_step == FIELD_APPL_ID)
     {
         if (strncmp(data, "hsch", length) == 0)
         {
@@ -260,7 +262,7 @@ string_element(void *context, const char *data, uint32_t length)
         }
         else
         {
-            LOG_ERROR("Cannot parse FIELD_APPL: %.*s", length, data);
+            LOG_ERROR("Cannot parse FIELD_APPL_ID: %.*s", length, data);
             err_code = VTC_ERROR_NOT_FOUND;
         }
     }
@@ -362,9 +364,9 @@ finish_map(void *context)
     {
         // we are done parsing schema or key-value
 
-        m_parsing_account_step = FIELD_APPL;
+        m_parsing_account_step = FIELD_APPL_ID;
     }
-    else if (m_parsing_account_step == FIELD_APPL)
+    else if (m_parsing_account_step == FIELD_APPL_ID)
     {
         // we finished parsing application
         // increase application index
@@ -372,7 +374,7 @@ finish_map(void *context)
         account_details_t *account = (account_details_t *) context;
         account->app_idx++;
 
-        m_parsing_account_step = FIELD_ROOT;
+        m_parsing_account_step = FIELD_APPL;
     }
     else
     {
