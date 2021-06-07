@@ -139,10 +139,10 @@ encode_tx(transaction_t *tx)
                 if (tx->details->tx.appl.key_values->values[i].type == VALUE_TYPE_INTEGER)
                 {
                     uint64_t value = tx->details->tx.appl.key_values->values[i].value_uint;
-#if IS_LITTLE_ENDIAN
+
                     // convert to big endian
-                    value = __builtin_bswap64(value);
-#endif
+                    value = htobe64(value);
+
                     mpack_write_bin(&writer,
                                     (const char *) &value,
                                     APPS_KV_SLICE_MAX_SIZE);
