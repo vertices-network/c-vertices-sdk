@@ -13,7 +13,10 @@
 #include <base64.h>
 #include <sha512_256.h>
 
-#define ACCOUNT_NUMBER 2
+typedef enum {
+    PAY_TX = 0,
+    APP_CALL_TX
+} tx_type_t;
 
 static ret_code_t
 vertices_evt_handler(vtc_evt_t *evt);
@@ -26,7 +29,7 @@ static account_info_t alice_account = {.public_b32 = {0}, .private_key = {
     0}, .amount = 0};
 // Bob is receiving the money 😎
 static account_info_t bob_account =
-    {.public_b32 = "27J56E73WOFSEQUECLRCLRNBV3D74H7BYB7USEXCJOYPLBTACULABWMLVU", .private_key = {
+    {.public_b32 = "NBRUQXLMEJDQLHE5BBEFBQ3FF4F3BZYWCUBBQM67X6EOEW2WHGS764OQXE", .private_key = {
         0}, .amount = 0};
 
 static vertex_t m_vertex = {
@@ -177,7 +180,10 @@ source_keys(bool create_new)
     char public_key_checksum[36] = {0};
     memcpy(public_key_checksum, alice_account.public_key, sizeof(alice_account.public_key));
 
-    err_code = sha512_256(alice_account.public_key, sizeof(alice_account.public_key), checksum, sizeof(checksum));
+    err_code = sha512_256(alice_account.public_key,
+                          sizeof(alice_account.public_key),
+                          checksum,
+                          sizeof(checksum));
     VTC_ASSERT(err_code);
 
     memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);
@@ -203,15 +209,36 @@ main(int argc, char *argv[])
     ret_code_t err_code;
 
     bool create_new = false;
+    tx_type_t run_tx = PAY_TX;
+
     int opt;
-    while ((opt = getopt(argc, argv, "n")) != -1)
+    while ((opt = getopt(argc, argv, "npa")) != -1)
     {
         switch (opt)
         {
-            case 'n': create_new = true;
+            case 'n':
+            {
+                create_new = true;
+            }
                 break;
-            default:fprintf(stderr, "Usage: %s [-n]\n", argv[0]);
+            case 'p':
+            {
+                run_tx = PAY_TX;
+            }
+                break;
+            case 'a':
+            {
+                run_tx = APP_CALL_TX;
+            }
+                break;
+
+            default:
+            {
+                fprintf(stderr,
+                        "Usage:\n%s [-p|-a] [-n] \nSend signed transaction on the blockchain.\n-p (default)\tSend [p]ayment (Alice sends tokens to Bob)\n-a\t\t\t\tSend [a]pplication call (Alice sends integer value to application)\n-n\t\t\t\tCreate [n]ew account",
+                        argv[0]);
                 exit(EXIT_FAILURE);
+            }
         }
     }
 
@@ -261,7 +288,9 @@ main(int argc, char *argv[])
     err_code = vertices_account_add(&bob_account, &bob_account_handle);
     VTC_ASSERT(err_code);
 
-    LOG_INFO("🤑 %f Algos on Alice's account (%s)", alice_account.amount / 1.e6, alice_account.public_b32);
+    LOG_INFO("🤑 %f Algos on Alice's account (%s)",
+             alice_account.amount / 1.e6,
+             alice_account.public_b32);
 
     if (alice_account.amount < 1001000)
     {
@@ -273,22 +302,45 @@ main(int argc, char *argv[])
         return 0;
     }
 
-    // send assets from account 0 to account 1
-    char *notes = (char *) "Alice sent 1 Algo to Bob";
-    err_code =
-        vertices_transaction_pay_new(alice_account_handle,
-                                     (char *) bob_account.public_key,
-                                     AMOUNT_SENT,
-                                     notes);
-    VTC_ASSERT(err_code);
+    switch (run_tx)
+    {
+        case PAY_TX:
+        {
+            // send assets from account 0 to account 1
+            char *notes = (char *) "Alice sent 1 Algo to Bob";
+            err_code =
+                vertices_transaction_pay_new(alice_account_handle,
+                                             (char *) bob_account.public_key,
+                                             AMOUNT_SENT,
+                                             notes);
+            VTC_ASSERT(err_code);
+        }
+            break;
 
+        case APP_CALL_TX:
+        {
+            // send application call
+            app_values_t kv = {0};
+            kv.count = 1;
+            kv.values[0].type = VALUE_TYPE_INTEGER;
+            kv.values[0].value_uint = 20;
+
+            err_code = vertices_transaction_app_call(alice_account_handle, 16037129, &kv);
+            VTC_ASSERT(err_code);
+        }
+            break;
+
+        default:
+            LOG_ERROR("Unknown action to run");
+    }
+
+    // processing
     size_t queue_size = 1;
     while (queue_size && err_code == VTC_SUCCESS)
     {
         err_code = vertices_event_process(&queue_size);
+        VTC_ASSERT(err_code);
     }
-
-    LOG_INFO("💸 Alice sent %f algo to Bob", AMOUNT_SENT / 1.e6);
 
     // delete the created accounts from the Vertices wallet
     err_code = vertices_account_del(alice_account_handle);
