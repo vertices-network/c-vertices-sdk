@@ -287,7 +287,7 @@ transaction_pay(size_t account_id, char *receiver, uint64_t amount, void *params
 
     // get provider details
     err_code = provider_tx_params_load(&tx_full);
-    if (err_code != VTC_SUCCESS)
+    if (err_code != VTC_SUCCESS && err_code != VTC_ERROR_OFFLINE)
     {
         LOG_ERROR("Cannot fetch tx params");
         return err_code;
@@ -353,7 +353,7 @@ transaction_appl(size_t account_id,
 
     // get provider details
     err_code = provider_tx_params_load(&tx_full);
-    if (err_code != VTC_SUCCESS)
+    if (err_code != VTC_SUCCESS && err_code != VTC_ERROR_OFFLINE)
     {
         LOG_ERROR("Cannot fetch tx params");
         return err_code;

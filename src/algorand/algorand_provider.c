@@ -77,6 +77,11 @@ provider_account_info_get(account_details_t *account)
 ret_code_t
 provider_tx_params_load(transaction_t *tx)
 {
+    // Algod doesn't allow for multiple calls to transactions/params using the same HTTP sock
+    // local copy of previously fetched data
+    static uint64_t m_min_fee = 0;
+    static uint64_t m_first_valid = 0;
+
     uint32_t response_code = 0;
     ret_code_t
         err_code =
@@ -122,6 +127,8 @@ provider_tx_params_load(transaction_t *tx)
             if (cJSON_IsNumber(fee))
             {
                 tx->fee = (uint64_t) fee->valueint;
+
+                m_min_fee = (uint64_t) fee->valueint; // keep a local copy
             }
 
             const cJSON *last_round = cJSON_GetObjectItemCaseSensitive(json, "last-round");
@@ -129,10 +136,24 @@ provider_tx_params_load(transaction_t *tx)
             {
                 tx->details->first_valid = (uint64_t) last_round->valueint + 1;
                 tx->details->last_valid = tx->details->first_valid + 1000;
+
+                m_first_valid = tx->details->first_valid = (uint64_t) last_round->valueint + 1;
             }
 
             cJSON_Delete(json);
         }
+    }
+    else if (m_first_valid != 0 && m_min_fee != 0 && m_provider.version.update_count != 0)
+    {
+        // use previously fetched data
+        tx->fee = m_min_fee;
+
+        tx->details->first_valid = m_first_valid;
+        tx->details->last_valid = tx->details->first_valid + 1000;
+
+        memcpy(tx->genesis_hash, m_provider.version.genesis_hash, sizeof(tx->genesis_hash));
+
+        err_code = VTC_ERROR_OFFLINE;
     }
 
     return err_code;
