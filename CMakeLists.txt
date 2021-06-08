@@ -33,6 +33,8 @@ if (COMPILE_ESP OR ESP_PLATFORM)
 else ()
     set(CMAKE_MACOSX_RPATH 1)
 
+    include(utils/libs.cmake)
+
     add_subdirectory(examples/unix)
     add_subdirectory(external/mbedtls)
     add_subdirectory(external/cJSON)
