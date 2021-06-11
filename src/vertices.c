@@ -23,12 +23,21 @@ typedef struct
 
 static vtc_events_buf_t m_events_queue = {0};
 
+/// Get node version
+/// \param version Pointer to \c provider_version_t
+/// \return
+/// * \c VTC_SUCCESS when \c version has been filled with node info
+/// * \c VTC_ERROR_OFFLINE when node cannot be reached to get info. Version could still be filled with information from a previous call.
 ret_code_t
 vertices_version(provider_version_t *version)
 {
     return provider_version_get(version);
 }
 
+/// Check if node is alive
+/// \return
+/// * \c VTC_SUCCESS when API can be reached
+/// * \c VTC_HTTP_ERROR when an error occurs
 ret_code_t
 vertices_ping()
 {

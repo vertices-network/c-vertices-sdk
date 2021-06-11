@@ -1,6 +1,10 @@
-//
-// Created by Cyril on 02/04/2021.
-//
+//! @file
+//!
+//! Vertices Network
+//! See License.txt for details
+//!
+//! Created by Cyril on 02/04/2021.
+
 
 #ifndef VERTICES_SDK_LIB_BASE32_H
 #define VERTICES_SDK_LIB_BASE32_H

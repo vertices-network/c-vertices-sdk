@@ -1,6 +1,9 @@
-//
-// Created by Cyril on 18/03/2021.
-//
+//! @file
+//!
+//! Vertices Network
+//! See License.txt for details
+//!
+//! Created by Cyril on 18/03/2021.
 
 #ifndef VERTICES_SRC_PROVIDER_H
 #define VERTICES_SRC_PROVIDER_H
@@ -23,7 +26,7 @@ typedef struct
 ret_code_t
 provider_account_info_get(account_details_t *account);
 
-///
+/// Get provider version
 /// \param version
 /// \return
 /// * VTC_ERROR_OFFLINE version has not been updated with latest values due to error on HTTP request

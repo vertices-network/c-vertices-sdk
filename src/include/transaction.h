@@ -1,6 +1,9 @@
-//
-// Created by Cyril on 17/03/2021.
-//
+//! @file
+//!
+//! Vertices Network
+//! See License.txt for details
+//!
+//! Created by Cyril on 17/03/2021.
 
 #ifndef VERTICES_INC_TRANSACTION_H
 #define VERTICES_INC_TRANSACTION_H

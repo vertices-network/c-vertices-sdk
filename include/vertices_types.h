@@ -1,6 +1,9 @@
-//
-// Created by Cyril on 19/03/2021.
-//
+//! @file
+//!
+//! Vertices Network
+//! See License.txt for details
+//!
+//! Created by Cyril on 19/03/2021.
 
 #ifndef VERTICES_SDK_LIB_INC_VERTICES_TYPES_H
 #define VERTICES_SDK_LIB_INC_VERTICES_TYPES_H
@@ -63,10 +66,10 @@ typedef struct
 
 typedef struct
 {
-    char public_b32[PUBLIC_B32_STR_MAX_LENGTH]; // b64 public address, with \0
-    unsigned char private_key[ADDRESS_LENGTH]; // 32-bytes private key
-    unsigned char public_key[ADDRESS_LENGTH]; // 32-bytes public key
-    int32_t amount; // tokens on account
+    char public_b32[PUBLIC_B32_STR_MAX_LENGTH]; //!< b32 public address, with `\0` termination character
+    unsigned char private_key[ADDRESS_LENGTH];  //!< 32-bytes private key
+    unsigned char public_key[ADDRESS_LENGTH];   //!< 32-bytes public key
+    int32_t amount;                             //!< amount of tokens on account
 } account_info_t;
 
 typedef enum

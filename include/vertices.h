@@ -1,6 +1,10 @@
-//
-// Created by Cyril on 17/03/2021.
-//
+//! @file
+//!
+//! Vertices Network
+//! See License.txt for details
+//!
+//! Created by Cyril on 17/03/2021.
+
 
 #ifndef VERTICES_SRC_VERTICE_H
 #define VERTICES_SRC_VERTICE_H
@@ -23,10 +27,10 @@ ret_code_t
 vertices_account_add(account_info_t *account, size_t *account_id);
 
 ret_code_t
-vertices_account_del(size_t account_handle);
+vertices_account_update(size_t account_handle);
 
 ret_code_t
-vertices_account_update(size_t account_handle);
+vertices_account_del(size_t account_handle);
 
 /// Send \c amount of tokens from \c account_id to \c receiver
 /// \param account_id Handle to the Sender account

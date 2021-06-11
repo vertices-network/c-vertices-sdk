@@ -1,6 +1,8 @@
-//
-// Created by Cyril on 18/03/2021.
-//
+//! @file
+//!
+//! Vertices Network
+//! See License.txt for details
+//! Created by Cyril on 18/03/2021.
 
 #ifndef VERTICES_EXAMPLES_UNIX_INC_VTC_LOG_H
 #define VERTICES_EXAMPLES_UNIX_INC_VTC_LOG_H

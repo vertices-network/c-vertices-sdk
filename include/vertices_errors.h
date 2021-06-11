@@ -1,6 +1,9 @@
-//
-// Created by Cyril on 17/03/2021.
-//
+//! @file
+//!
+//! Vertices Network
+//! See License.txt for details
+//!
+//! Created by Cyril on 17/03/2021.
 
 #ifndef VERTICES_INC_VERTICES_ERRORS_H
 #define VERTICES_INC_VERTICES_ERRORS_H
@@ -29,9 +32,9 @@ typedef enum
  */
 typedef struct
 {
-    uint32_t line_num;    /**< The line number where the error occurred. */
-    uint8_t const *p_file_name; /**< The file in which the error occurred. */
-    uint32_t err_code;    /**< The error code representing the error that occurred. */
+    uint32_t line_num;    //!< The line number where the error occurred.
+    uint8_t const *p_file_name; //!< The file in which the error occurred.
+    uint32_t err_code;    //!< The error code representing the error that occurred.
 } error_info_t;
 
 void

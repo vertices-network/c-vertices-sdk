@@ -1,6 +1,9 @@
-//
-// Created by Cyril on 04/06/2021.
-//
+//! @file
+//!
+//! Vertices Network
+//! See License.txt for details
+//!
+//! Created by Cyril on 04/06/2021.
 
 #ifndef VERTICES_SDK_SRC_ALGORAND_ALGORAND_MPACK_PARSER_H
 #define VERTICES_SDK_SRC_ALGORAND_ALGORAND_MPACK_PARSER_H
