@@ -5,10 +5,14 @@
 //!
 //! Created by Cyril on 18/03/2021.
 
-#ifndef VERTICES_INC_HTTP_H
-#define VERTICES_INC_HTTP_H
+#ifndef VERTICES_HTTP_H
+#define VERTICES_HTTP_H
 
 #include "vertices_types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef HTTP_MAXIMUM_CONTENT_LENGTH
 #define HTTP_MAXIMUM_CONTENT_LENGTH 4096
@@ -60,4 +64,8 @@ http_post(const provider_info_t *provider,
 void
 http_close(void);
 
-#endif //VERTICES_INC_HTTP_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif //VERTICES_HTTP_H

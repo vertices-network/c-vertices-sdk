@@ -4,7 +4,7 @@
 
 #include <vertices_log.h>
 #include "vertices_errors.h"
-#include <http.h>
+#include "vertices_http.h"
 #include <transaction.h>
 #include <base64.h>
 #include <parser.h>
