@@ -9,10 +9,6 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-# This example uses an extra component for common functions such as Wi-Fi and Ethernet connection.
-list(APPEND EXTRA_COMPONENT_DIRS $ENV{IDF_PATH}/examples/common_components/protocol_examples_common)
-list(APPEND EXTRA_COMPONENT_DIRS ${CMAKE_CURRENT_LIST_DIR}/vertices_ports)
-
 # Include vertices library from local directory if we are not building from PlatformIO
 string(FIND $ENV{IDF_PATH} ".platformio" is_platformio)
 if (${is_platformio} LESS 0)
@@ -21,6 +17,7 @@ if (${is_platformio} LESS 0)
                 ${VERTICES_ROOT}/src
                 )
     else ()
+        # consider that we are building from current file's directory in the Vertices SDK
         list(APPEND EXTRA_COMPONENT_DIRS
                 ${CMAKE_CURRENT_LIST_DIR}/../../src
                 )
@@ -34,6 +31,10 @@ endif ()
 
 # Init ESP-IDF build system
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+
+# This example uses an extra component for common functions such as Wi-Fi and Ethernet connection.
+list(APPEND EXTRA_COMPONENT_DIRS $ENV{IDF_PATH}/examples/common_components/protocol_examples_common)
+
 project(esp32_app)
 
 # Make sure we are compiling for the BLOCKCHAIN_PROVIDER

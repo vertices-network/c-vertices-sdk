@@ -280,3 +280,9 @@ http_close(void)
         m_client_handle = NULL;
     }
 }
+
+void
+force_linker_inclusion()
+{
+    //dummy
+}

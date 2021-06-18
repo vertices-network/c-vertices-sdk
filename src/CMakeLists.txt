@@ -5,6 +5,7 @@ set(VERTICES_SRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/account.c
         ${CMAKE_CURRENT_SOURCE_DIR}/base64.c
         ${CMAKE_CURRENT_SOURCE_DIR}/base32.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/http_weak.c
         ${CMAKE_CURRENT_SOURCE_DIR}/sha512_256.c
         ${CMAKE_CURRENT_SOURCE_DIR}/vertices_errors.c
         ${CMAKE_CURRENT_SOURCE_DIR}/vertices.c
@@ -36,7 +37,7 @@ if (ESP_PLATFORM)
     idf_component_register(SRCS ${VERTICES_SRC_FILES}
             INCLUDE_DIRS ../include include
             PRIV_INCLUDE_DIRS "${VERTICES_INC_DIRS}"
-            REQUIRES mbedtls esp_http_client vertices_ports
+            REQUIRES mbedtls esp_http_client
             )
 
 elseif (ZEPHYR_BASE)

@@ -1,6 +1,6 @@
 {
 	"name": "vertices-sdk",
-	"version": "0.1.10",
+	"version": "0.1.11",
 	"keywords": "algorand, blockchain, wallet, api",
 	"description": "Blockchain wallet library to create blockchain-enabled IoT devices. It supports the Algorand API.",
 	"repository": {

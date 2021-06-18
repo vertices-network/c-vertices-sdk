@@ -10,6 +10,7 @@
 
 #include "vertices_config.h"
 #include "vertices_errors.h"
+#include "stddef.h"
 
 /// if \c TX_PAYLOAD_MAX_LENGTH is not enough, you can add up more space for encoded TX
 /// define \c OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES as compiler flag
