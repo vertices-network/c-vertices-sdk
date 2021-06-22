@@ -11,6 +11,11 @@ if(EXISTS $ENV{CONDA_PREFIX}/include AND EXISTS $ENV{CONDA_PREFIX}/lib)
 endif()
 
 if(APPLE)
+    if(EXISTS /usr/local/include AND EXISTS /usr/local/lib)
+        include_directories(/usr/local/include/)
+        link_directories(/usr/local/lib/)
+    endif()
+
     # Apple ARM64 specifics:
     # - brew-installed packages are located into `/opt/homebrew/`
     if(EXISTS /opt/homebrew/include AND EXISTS /opt/homebrew/lib)
