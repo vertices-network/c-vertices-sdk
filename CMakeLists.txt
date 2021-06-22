@@ -43,6 +43,8 @@ elseif (COMPILE_UNIX)
 
     set(CMAKE_MACOSX_RPATH 1)
 
+    include(utils/libs.cmake)
+
     add_subdirectory(examples/unix)
     add_subdirectory(external/mbedtls)
     add_subdirectory(external/cJSON)
