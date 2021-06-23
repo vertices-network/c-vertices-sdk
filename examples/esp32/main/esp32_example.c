@@ -17,6 +17,7 @@
 
 #include "esp_http_client.h"
 #include "vertices.h"
+#include "config.h"
 
 static const char *TAG = "vertices_example";
 
@@ -48,7 +49,7 @@ extern const uint8_t signature_keys_start[] asm("_binary_private_key_bin_start")
 extern const uint8_t signature_key_end[] asm("_binary_private_key_bin_end");
 
 static provider_info_t providers =
-    {.url = (char *) "https://api.testnet.algoexplorer.io", .port = 0, .header = (char *) "", .cert_pem = algoexplorer_root_cert_pem_start};
+    {.url = (char *) SERVER_URL, .port = SERVER_PORT, .header = (char *) SERVER_TOKEN_HEADER, .cert_pem = algoexplorer_root_cert_pem_start};
 
 // Alice's account is used to send data, private key is taken from config/private_key.bin
 static account_info_t alice_account =
@@ -57,7 +58,7 @@ static account_info_t alice_account =
         .amount = 0};
 // Bob is receiving the money 😎
 static account_info_t bob_account =
-    {.public_b32 = "27J56E73WOFSEQUECLRCLRNBV3D74H7BYB7USEXCJOYPLBTACULABWMLVU", .private_key = {
+    {.public_b32 = ACCOUNT_RECEIVER, .private_key = {
         0}, .amount = 0};
 
 static ret_code_t
@@ -242,7 +243,7 @@ vtc_wallet_task(void *param)
     kv.values[0].type = VALUE_TYPE_INTEGER;
     kv.values[0].value_uint = 32;
 
-    err_code = vertices_transaction_app_call(alice_account_handle, 16037129, &kv);
+    err_code = vertices_transaction_app_call(alice_account_handle, APP_ID, &kv);
     VTC_ASSERT(err_code);
 
     while (1)

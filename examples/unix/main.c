@@ -13,7 +13,8 @@
 #include <base64.h>
 #include <sha512_256.h>
 
-typedef enum {
+typedef enum
+{
     PAY_TX = 0,
     APP_CALL_TX
 } tx_type_t;
@@ -29,7 +30,7 @@ static account_info_t alice_account = {.public_b32 = {0}, .private_key = {
     0}, .amount = 0};
 // Bob is receiving the money 😎
 static account_info_t bob_account =
-    {.public_b32 = "NBRUQXLMEJDQLHE5BBEFBQ3FF4F3BZYWCUBBQM67X6EOEW2WHGS764OQXE", .private_key = {
+    {.public_b32 = ACCOUNT_RECEIVER, .private_key = {
         0}, .amount = 0};
 
 static vertex_t m_vertex = {
@@ -325,13 +326,12 @@ main(int argc, char *argv[])
             kv.values[0].type = VALUE_TYPE_INTEGER;
             kv.values[0].value_uint = 20;
 
-            err_code = vertices_transaction_app_call(alice_account_handle, 16037129, &kv);
+            err_code = vertices_transaction_app_call(alice_account_handle, APP_ID, &kv);
             VTC_ASSERT(err_code);
         }
             break;
 
-        default:
-            LOG_ERROR("Unknown action to run");
+        default:LOG_ERROR("Unknown action to run");
     }
 
     // processing
