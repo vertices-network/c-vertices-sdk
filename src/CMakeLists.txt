@@ -5,9 +5,11 @@ set(VERTICES_SRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/account.c
         ${CMAKE_CURRENT_SOURCE_DIR}/base64.c
         ${CMAKE_CURRENT_SOURCE_DIR}/base32.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/http_weak.c
         ${CMAKE_CURRENT_SOURCE_DIR}/sha512_256.c
         ${CMAKE_CURRENT_SOURCE_DIR}/vertices_errors.c
         ${CMAKE_CURRENT_SOURCE_DIR}/vertices.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/$ENV{BLOCKCHAIN_PROVIDER}/$ENV{BLOCKCHAIN_PROVIDER}_parser.c
         ${CMAKE_CURRENT_SOURCE_DIR}/$ENV{BLOCKCHAIN_PROVIDER}/$ENV{BLOCKCHAIN_PROVIDER}_provider.c
         ${CMAKE_CURRENT_SOURCE_DIR}/$ENV{BLOCKCHAIN_PROVIDER}/$ENV{BLOCKCHAIN_PROVIDER}_transaction.c
         ${CMAKE_CURRENT_SOURCE_DIR}/../external/mpack/src/mpack/mpack-common.c
@@ -28,7 +30,6 @@ string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
 
 if (ESP_PLATFORM)
     # Add platform-specific http wrapper provided by Vertices
-    list(APPEND VERTICES_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/http/http_esp.c)
 
     list(APPEND compile_options "-DBLOCKCHAIN_PROVIDER=$ENV{BLOCKCHAIN_PROVIDER}")
     list(APPEND compile_options "-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
@@ -39,13 +40,12 @@ if (ESP_PLATFORM)
             REQUIRES mbedtls esp_http_client
             )
 
-elseif(ZEPHYR_BASE)
+elseif (ZEPHYR_BASE)
 
     # Zephyr implementation is on the roadmap
+    message(WARNING "We are not able to compile for Zephyr yet")
 
-else ()
-    # Add platform-specific http wrapper provided by Vertices
-    list(APPEND VERTICES_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/http/http_curl.c)
+elseif (COMPILE_UNIX)
 
     add_definitions(-DBLOCKCHAIN_PROVIDER=$ENV{BLOCKCHAIN_PROVIDER})
     add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
@@ -64,7 +64,7 @@ else ()
             )
 
     # public header files
-    install(FILES ../include/vertices.h ../include/vertices_errors.h ../include/vertices_types.h DESTINATION include)
+    install(FILES ../include/vertices.h ../include/vertices_errors.h ../include/vertices_types.h ../include/vertices_http.h DESTINATION include)
 
     install(TARGETS vertices
             EXPORT verticesTargets
@@ -77,4 +77,6 @@ else ()
     target_link_libraries(vertices cjson mbedcrypto)
     target_compile_options(vertices PRIVATE -pedantic -Wall -Werror -Wstrict-prototypes -Wwrite-strings -Wshadow -Winit-self -Wformat=2 -Wmissing-prototypes -Wstrict-overflow=2 -Wc++-compat -Wundef -Wconversion -Wno-missing-braces)
 
+else ()
+    message(WARNING "We are not able to compile for any other platform yet")
 endif ()

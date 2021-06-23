@@ -1,6 +1,9 @@
-//
-// Created by Cyril on 17/03/2021.
-//
+//! @file
+//!
+//! Vertices Network
+//! See License.txt for details
+//!
+//! Created by Cyril on 17/03/2021.
 
 #ifndef VERTICES_INC_TRANSACTION_H
 #define VERTICES_INC_TRANSACTION_H
@@ -40,12 +43,15 @@ typedef struct
 {
     uint8_t sender_pub[ADDRESS_LENGTH];
     uint64_t fee;
-    uint8_t genesis_hash[HASH_LENGTH];
+    uint8_t genesis_hash[BLOCK_HASH_LENGTH];
     transaction_details_t *details;
 } transaction_t;
 
 ret_code_t
 transaction_pay(size_t account_id, char *receiver, uint64_t amount, void * params);
+
+ret_code_t
+transaction_appl(size_t account_id, uint64_t app_id, void *params);
 
 ret_code_t
 transaction_get(size_t bufid, signed_transaction_t **tx);

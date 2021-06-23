@@ -1,13 +1,16 @@
-//
-// Created by Cyril on 18/03/2021.
-//
+//! @file
+//!
+//! Vertices Network
+//! See License.txt for details
+//!
+//! Created by Cyril on 18/03/2021.
 
 #ifndef VERTICES_SRC_PROVIDER_H
 #define VERTICES_SRC_PROVIDER_H
 
 #include <stdio.h>
 #include "vertices_types.h"
-#include "http.h"
+#include "vertices_http.h"
 #include "transaction.h"
 #include <account.h>
 
@@ -23,7 +26,7 @@ typedef struct
 ret_code_t
 provider_account_info_get(account_details_t *account);
 
-///
+/// Get provider version
 /// \param version
 /// \return
 /// * VTC_ERROR_OFFLINE version has not been updated with latest values due to error on HTTP request
@@ -31,6 +34,12 @@ provider_account_info_get(account_details_t *account);
 ret_code_t
 provider_version_get(provider_version_t *version);
 
+/// Get transactions parameters such as first-valid and minimum fee.
+/// \param tx
+/// \return
+/// \c VTC_SUCCESS on success
+/// \c VTC_ERROR_OFFLINE when previously fetched data is being used. Those params can be used.
+/// \c VTC_HTTP_ERROR when error fetching tx params
 ret_code_t
 provider_tx_params_load(transaction_t *tx);
 

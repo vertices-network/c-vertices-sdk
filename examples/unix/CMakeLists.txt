@@ -2,6 +2,7 @@ set(PROJECT_NAME unix_example)
 
 set(SRC_FILES
         main.c
+        vertices_ports/http_curl.c
         )
 
 set(INC_FOLDERS

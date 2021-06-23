@@ -1,23 +1,44 @@
-//
-// Created by Cyril on 19/03/2021.
-//
+//! @file
+//!
+//! Vertices Network
+//! See License.txt for details
+//!
+//! Created by Cyril on 19/03/2021.
 
 #ifndef VERTICES_SDK_LIB_INC_VERTICES_TYPES_H
 #define VERTICES_SDK_LIB_INC_VERTICES_TYPES_H
 
 #include "vertices_config.h"
 #include "vertices_errors.h"
+#include "stddef.h"
 
+/// if \c TX_PAYLOAD_MAX_LENGTH is not enough, you can add up more space for encoded TX
+/// define \c OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES as compiler flag
 #ifndef OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES
 #define OPTIONAL_TX_FIELDS_MAX_SIZE 0
 #endif
 
+// addresses
 #define ADDRESS_LENGTH                  32
-#define HASH_LENGTH                     32
-#define TX_PAYLOAD_MAX_LENGTH           (512+OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES)
-#define SIGNATURE_LENGTH                64
 #define PUBLIC_B32_STR_MAX_LENGTH       65
+
+// transaction
+#define SIGNATURE_LENGTH                64
 #define TRANSACTION_HASH_STR_MAX_LENGTH 53
+
+// blocks
+#define BLOCK_HASH_LENGTH               32
+
+// HTTP payload
+#define TX_PAYLOAD_MAX_LENGTH           (512+OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES) ///< Encoded TX maximum length in bytes
+
+// application-related
+#define APPS_MAX_COUNT                  3   //!< Maximum number of applications per account
+#define APPS_KV_MAX_COUNT               8   //!< Key-Value maximum count
+#define APPS_KV_NAME_MAX_LENGTH         8   //!< Key maximum length (ASCII-encoded)
+#define APPS_KV_SLICE_MAX_SIZE          8   //!< Byte slice maximum length
+#define APP_ARGS_MAX_LENGTH             128 //!<
+
 
 /// Asynchronous operations can be handled using Vertices events types
 typedef enum
@@ -46,11 +67,35 @@ typedef struct
 
 typedef struct
 {
-    char public_b32[PUBLIC_B32_STR_MAX_LENGTH]; // b64 public address, with \0
-    unsigned char private_key[ADDRESS_LENGTH]; // 32-bytes private key
-    unsigned char public_key[ADDRESS_LENGTH]; // 32-bytes public key
-    int32_t amount; // tokens on account
+    char public_b32[PUBLIC_B32_STR_MAX_LENGTH]; //!< b32 public address, with `\0` termination character
+    unsigned char private_key[ADDRESS_LENGTH];  //!< 32-bytes private key
+    unsigned char public_key[ADDRESS_LENGTH];   //!< 32-bytes public key
+    int32_t amount;                             //!< amount of tokens on account
 } account_info_t;
+
+typedef enum
+{
+    VALUE_TYPE_NONE = 0,
+    VALUE_TYPE_BYTESLICE,
+    VALUE_TYPE_INTEGER,
+} value_type_t;
+
+typedef struct
+{
+    char name[APPS_KV_NAME_MAX_LENGTH]; //!< variable name, ASCII-encoded, can contains up to APPS_KV_NAME_MAX_LENGTH bytes
+    value_type_t type; //!< type [tt]
+    union
+    {
+        uint64_t value_uint;
+        uint8_t value_slice[APPS_KV_SLICE_MAX_SIZE];
+    };
+} app_key_value_t;
+
+typedef struct
+{
+    uint32_t count;
+    app_key_value_t values[APPS_KV_MAX_COUNT];
+} app_values_t;
 
 typedef struct
 {
@@ -75,7 +120,7 @@ typedef struct
 {
     uint32_t update_count;
     char network[64];
-    char genesis_hash[HASH_LENGTH];
+    char genesis_hash[BLOCK_HASH_LENGTH];
     unsigned int major;
     unsigned int minor;
     unsigned int patch;

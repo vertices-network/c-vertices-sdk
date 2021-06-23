@@ -76,6 +76,21 @@ account_get_addr(size_t id, char *addr)
     return VTC_SUCCESS;
 }
 
+bool
+account_has_app(size_t id, uint64_t app_id)
+{
+
+    for (uint32_t i = 0; i < m_accounts[id].app_idx; ++i)
+    {
+        if (m_accounts[id].apps_local[i].app_id == app_id)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 ret_code_t
 account_delete(size_t id)
 {
