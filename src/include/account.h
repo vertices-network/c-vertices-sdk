@@ -47,7 +47,7 @@ typedef struct
 
 typedef struct
 {
-    account_info_t *info;
+    account_info_t info; //!< Account generic infos: public keys and balance. ⚠️ Must be at the beginning of the structure as it will be casted to \c account_info_t.
     int32_t round; //!< The round for which this information is relevant.
     int32_t
         rewards; //!< [ern] total rewards of MicroAlgos the account has received, including pending rewards.
@@ -64,19 +64,19 @@ typedef struct
 } account_details_t;
 
 ret_code_t
-account_add(account_info_t *account, size_t *id);
+account_new(char *public_b32, account_info_t **account);
 
 ret_code_t
-account_get_addr(size_t id, char *addr);
+account_free(account_info_t *account);
+
+ret_code_t
+account_update(account_info_t *account);
 
 bool
-account_has_app(size_t id, uint64_t app_id);
+account_has_app(account_info_t *account, uint64_t app_id);
 
 ret_code_t
-account_delete(size_t id);
-
-ret_code_t
-account_update(size_t id);
+account_balance(account_info_t *account, int32_t *balance);
 
 ret_code_t
 account_init(void);

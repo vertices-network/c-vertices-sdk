@@ -121,7 +121,7 @@ uint_element(void *context, uint64_t value)
         {
             case FIELD_ALGO:
             {
-                account->info->amount = (int32_t) value;
+                account->info.amount = (int32_t) value;
                 m_parsing_account_step = FIELD_ROOT; // field if fully parsed, reset step
             }
                 break;

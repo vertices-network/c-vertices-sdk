@@ -48,10 +48,10 @@ typedef struct
 } transaction_t;
 
 ret_code_t
-transaction_pay(size_t account_id, char *receiver, uint64_t amount, void * params);
+transaction_pay(account_info_t *sender, char *receiver, uint64_t amount, void * params);
 
 ret_code_t
-transaction_appl(size_t account_id, uint64_t app_id, void *params);
+transaction_appl(account_info_t *sender, uint64_t app_id, void *params);
 
 ret_code_t
 transaction_get(size_t bufid, signed_transaction_t **tx);

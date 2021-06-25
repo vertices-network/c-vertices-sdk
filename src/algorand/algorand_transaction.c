@@ -238,9 +238,9 @@ encode_tx(transaction_t *tx)
 }
 
 ret_code_t
-transaction_pay(size_t account_id, char *receiver, uint64_t amount, void *params)
+transaction_pay(account_info_t *sender, char *receiver, uint64_t amount, void *params)
 {
-    ret_code_t err_code = VTC_SUCCESS;
+    ret_code_t err_code;
 
     if (m_pending_tx_buffer[m_tx_buffer_idx].payload_length != 0)
     {
@@ -268,12 +268,7 @@ transaction_pay(size_t account_id, char *receiver, uint64_t amount, void *params
     tx_full.details = &details;
 
     // fill generic transaction_t
-    err_code = account_get_addr(account_id, (char *) tx_full.sender_pub);
-    if (err_code != VTC_SUCCESS)
-    {
-        LOG_ERROR("Unable to get sender account address");
-        return err_code;
-    }
+    memcpy(tx_full.sender_pub, sender->public_key, sizeof(tx_full.sender_pub));
 
     tx_full.fee = TX_DEFAULT_FEE;
     tx_full.details->tx_type = ALGORAND_PAYMENT_TRANSACTION;
@@ -295,6 +290,7 @@ transaction_pay(size_t account_id, char *receiver, uint64_t amount, void *params
 
     // tx is now ready to be encoded
     err_code = encode_tx(&tx_full);
+    VTC_ASSERT(err_code);
 
     vtc_evt_t evt = {.type = VTC_EVT_TX_READY_TO_SIGN, .bufid = m_tx_buffer_idx};
 
@@ -308,11 +304,11 @@ transaction_pay(size_t account_id, char *receiver, uint64_t amount, void *params
 }
 
 ret_code_t
-transaction_appl(size_t account_id,
+transaction_appl(account_info_t *sender,
                  uint64_t app_id,
                  void *params)
 {
-    ret_code_t err_code = VTC_SUCCESS;
+    ret_code_t err_code;
 
     if (m_pending_tx_buffer[m_tx_buffer_idx].payload_length != 0)
     {
@@ -328,12 +324,7 @@ transaction_appl(size_t account_id,
     tx_full.details = &details;
 
     // fill generic transaction_t
-    err_code = account_get_addr(account_id, (char *) tx_full.sender_pub);
-    if (err_code != VTC_SUCCESS)
-    {
-        LOG_ERROR("Unable to get sender account address");
-        return err_code;
-    }
+    memcpy(tx_full.sender_pub, sender->public_key, sizeof(tx_full.sender_pub));
 
     tx_full.fee = TX_DEFAULT_FEE;
     tx_full.details->tx_type = ALGORAND_APPLICATION_CALL_TRANSACTION;
@@ -344,9 +335,9 @@ transaction_appl(size_t account_id,
     tx_full.details->tx.appl.app_id = app_id;
     tx_full.details->tx.appl.key_values = (app_values_t *) params;
 
-    if (!account_has_app(account_id, app_id))
+    if (!account_has_app(sender, app_id))
     {
-        LOG_INFO("Account #%zu opting-in application %llu", account_id, app_id);
+        LOG_INFO("Sender account opting-in application %llu", app_id);
 
         tx_full.details->tx.appl.on_complete = ALGORAND_ON_COMPLETE_OPT_IN;
     }
@@ -417,7 +408,7 @@ transaction_pending_send(size_t bufid)
         return VTC_ERROR_INVALID_PARAM;
     }
 
-    ret_code_t err_code = VTC_SUCCESS;
+    ret_code_t err_code;
 
     err_code = encode_tx_replace_signature(bufid);
     VTC_ASSERT(err_code);

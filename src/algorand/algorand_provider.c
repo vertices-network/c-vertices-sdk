@@ -58,7 +58,7 @@ provider_account_info_get(account_details_t *account)
 {
     char relative_path[128] = {0};
 
-    int ret = sprintf(relative_path, "/v2/accounts/%s?format=msgpack", account->info->public_b32);
+    int ret = sprintf(relative_path, "/v2/accounts/%s?format=msgpack", account->info.public_b32);
     VTC_ASSERT_BOOL(ret < 128 && ret >= 0);
 
     uint32_t response_code = 0;

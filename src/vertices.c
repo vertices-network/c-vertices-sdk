@@ -6,6 +6,9 @@
 #include <account.h>
 #include <transaction.h>
 #include <vertices_log.h>
+#include <libc.h>
+#include <sha512_256.h>
+#include <base32.h>
 #include "vertices.h"
 
 static ret_code_t
@@ -45,33 +48,65 @@ vertices_ping()
 }
 
 ret_code_t
-vertices_account_add(account_info_t *account, size_t *account_id)
+vertices_account_new_from_b32(char *public_b32, account_info_t **account)
 {
-    return account_add(account, account_id);
+    return account_new(public_b32, account);
 }
 
 ret_code_t
-vertices_account_del(size_t account_handle)
+vertices_account_new_from_bin(char *public_key, account_info_t **account)
 {
-    return account_delete(account_handle);
+    VTC_ASSERT_BOOL(public_key != 0);
+    VTC_ASSERT_BOOL(account != 0);
+
+    ret_code_t err_code;
+
+    unsigned char checksum[32] = {0};
+    char public_key_checksum[36] = {0};
+    char public_b32[PUBLIC_B32_STR_MAX_LENGTH] = {0};
+
+    memcpy(public_key_checksum, public_key, ADDRESS_LENGTH);
+
+    err_code = sha512_256((const unsigned char *) public_key,
+                          ADDRESS_LENGTH,
+                          checksum,
+                          sizeof(checksum));
+    VTC_ASSERT(err_code);
+
+    memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);
+
+    size_t size = 58;
+    err_code = b32_encode((const char *) public_key_checksum,
+                          sizeof(public_key_checksum),
+                          public_b32,
+                          &size);
+    VTC_ASSERT(err_code);
+
+    return account_new(public_b32, account);
 }
 
 ret_code_t
-vertices_account_update(size_t account_handle)
+vertices_account_free(account_info_t *account)
 {
-    return account_update(account_handle);
+    return account_free(account);
 }
 
 ret_code_t
-vertices_transaction_pay_new(size_t account_id, char *receiver, uint64_t amount, void *params)
+vertices_account_update(account_info_t *account)
 {
-    return transaction_pay(account_id, receiver, amount, params);
+    return account_update(account);
 }
 
 ret_code_t
-vertices_transaction_app_call(size_t account_id, uint64_t app_id, void *params)
+vertices_transaction_pay_new(account_info_t *account, char *receiver, uint64_t amount, void *params)
 {
-    return transaction_appl(account_id, app_id, params);
+    return transaction_pay(account, receiver, amount, params);
+}
+
+ret_code_t
+vertices_transaction_app_call(account_info_t *account, uint64_t app_id, void *params)
+{
+    return transaction_appl(account, app_id, params);
 }
 
 ret_code_t
@@ -141,7 +176,7 @@ vertices_event_process(size_t * queue_size)
         }
 
         // now let's have the user handle the event
-        if (err_code == VTC_SUCCESS && m_vertices_evt_handler != NULL)
+        if (m_vertices_evt_handler != NULL)
         {
             err_code = m_vertices_evt_handler(&m_events_queue.evt[m_events_queue.rd_index]);
 

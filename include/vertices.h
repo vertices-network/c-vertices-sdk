@@ -24,13 +24,16 @@ ret_code_t
 vertices_ping(void);
 
 ret_code_t
-vertices_account_add(account_info_t *account, size_t *account_id);
+vertices_account_new_from_b32(char *public_b32, account_info_t **account);
 
 ret_code_t
-vertices_account_update(size_t account_handle);
+vertices_account_new_from_bin(char *public_key, account_info_t **account);
 
 ret_code_t
-vertices_account_del(size_t account_handle);
+vertices_account_update(account_info_t *account);
+
+ret_code_t
+vertices_account_free(account_info_t *account);
 
 /// Send \c amount of tokens from \c account_id to \c receiver
 /// \param account_id Handle to the Sender account
@@ -39,15 +42,15 @@ vertices_account_del(size_t account_handle);
 /// \param params Pointer to type, where type is known by blockchain implementation. Can be NULL.
 /// \return \c VTC_ERROR_INVALID_PARAM if one parameter is incorrect
 ret_code_t
-vertices_transaction_pay_new(size_t account_id, char *receiver, uint64_t amount, void *params);
+vertices_transaction_pay_new(account_info_t *account, char *receiver, uint64_t amount, void *params);
 
 /// Call Smart Contract DApp
-/// \param account_id Account handle, see \c vertices_account_add
+/// \param account_id Account handle, see \c vertices_account_new_from_b32
 /// \param app_id Application ID
 /// \param params Pointer to type, where type is known by blockchain implementation. Can be NULL.
 /// \return
 ret_code_t
-vertices_transaction_app_call(size_t account_id, uint64_t app_id, void *params);
+vertices_transaction_app_call(account_info_t *account, uint64_t app_id, void *params);
 
 ret_code_t
 vertices_transaction_get(size_t bufid, signed_transaction_t **tx);

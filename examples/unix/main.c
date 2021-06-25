@@ -25,13 +25,19 @@ vertices_evt_handler(vtc_evt_t *evt);
 static provider_info_t providers =
     {.url = (char *) SERVER_URL, .port = SERVER_PORT, .header = (char *) SERVER_TOKEN_HEADER};
 
-// Alice's account is used to send data, private key is taken from config/private_key.bin
-static account_info_t alice_account = {.public_b32 = {0}, .private_key = {
-    0}, .amount = 0};
+/// We store anything related to the account into the below structure
+/// The private key is used outside of the Vertices library:
+///    you don't have to pass the private key to the SDK as signing is done outside
+typedef struct
+{
+    unsigned char private_key[ADDRESS_LENGTH];  //!< 32-bytes private key
+    account_info_t *vtc_account;               //!< pointer to Vertices account data
+} account_t;
+
+// Alice's account is used to send data, keys will be retrived from config/key_files.txt
+static account_t alice_account = {.private_key = {0}, .vtc_account = NULL};
 // Bob is receiving the money 😎
-static account_info_t bob_account =
-    {.public_b32 = ACCOUNT_RECEIVER, .private_key = {
-        0}, .amount = 0};
+static account_t bob_account = {.private_key = {0}, .vtc_account = NULL};
 
 static vertex_t m_vertex = {
     .provider = &providers,
@@ -56,7 +62,9 @@ vertices_evt_handler(vtc_evt_t *evt)
                 // libsodium wants to have private and public keys concatenated
                 unsigned char keys[crypto_sign_ed25519_SECRETKEYBYTES] = {0};
                 memcpy(keys, alice_account.private_key, sizeof(alice_account.private_key));
-                memcpy(&keys[32], alice_account.public_key, sizeof(alice_account.public_key));
+                memcpy(&keys[32],
+                       alice_account.vtc_account->public_key,
+                       ADDRESS_LENGTH);
 
                 // prepend "TX" to the payload before signing
                 unsigned char to_be_signed[tx->payload_length + 2];
@@ -124,52 +132,78 @@ vertices_evt_handler(vtc_evt_t *evt)
     return err_code;
 }
 
-/// Source the private/public keys from file.
-/// \param create_new Indicates to create a new random account if private key is not found or incorrect
-/// \return \c VTC_ERROR_NOT_FOUND account not found
+/// Create new random account
+/// Account keys will be stored in files
 static ret_code_t
-source_keys(bool create_new)
+create_new_account(void)
 {
     ret_code_t err_code;
+
     unsigned char seed[crypto_sign_ed25519_SEEDBYTES] = {0};
     unsigned char ed25519_pk[crypto_sign_ed25519_PUBLICKEYBYTES];
 
-    FILE *f = fopen(CONFIG_PATH "private_key.bin", "rb");
+    LOG_WARNING("🧾 Creating new random account and storing it (path " CONFIG_PATH ")");
+
+    unsigned char ed25519_sk[crypto_sign_ed25519_SECRETKEYBYTES];
+    randombytes_buf(seed, sizeof(seed));
+
+    crypto_sign_ed25519_seed_keypair(ed25519_pk, ed25519_sk, seed);
+
+    memcpy(alice_account.private_key, ed25519_sk, sizeof(alice_account.private_key));
+
+    FILE *fw_priv = fopen(CONFIG_PATH "private_key.bin", "wb");
+    if (fw_priv == NULL)
+    {
+        LOG_ERROR("Cannot create " CONFIG_PATH "private_key.bin");
+        return VTC_ERROR_NOT_FOUND;
+    }
+    else
+    {
+        fwrite(ed25519_sk, 1, ADDRESS_LENGTH, fw_priv);
+        fclose(fw_priv);
+    }
+
+    // adding account, account address will be computed from binary public key
+    err_code = vertices_account_new_from_bin((char *) ed25519_pk, &alice_account.vtc_account);
+    VTC_ASSERT(err_code);
+
+    // we can now store the b32 address in a file
+    FILE *fw_pub = fopen(CONFIG_PATH "public_b32.txt", "w");
+    if (fw_pub != NULL)
+    {
+        size_t len = strlen(alice_account.vtc_account->public_b32);
+
+        fwrite(alice_account.vtc_account->public_b32, 1, len, fw_pub);
+        fwrite("\n", 1, 1, fw_pub);
+        fclose(fw_pub);
+    }
+
+    return err_code;
+}
+
+/// Source the account using private/public keys from files.
+/// \return \c VTC_ERROR_NOT_FOUND account not found
+static ret_code_t
+load_existing_account()
+{
+    ret_code_t err_code;
+
+    char public_b32[PUBLIC_B32_STR_MAX_LENGTH] = {0};
+
     size_t bytes_read = 0;
-    if (f != NULL)
+
+    // we either create a new random account or load it from private and public key files.
+    // key files can also be generated using [`algokey`](https://developer.algorand.org/docs/reference/cli/algokey/generate/)
+    FILE *f_priv = fopen(CONFIG_PATH "private_key.bin", "rb");
+    if (f_priv != NULL)
     {
         LOG_INFO("🔑 Loading private key from: %s", CONFIG_PATH "private_key.bin");
 
-        bytes_read = fread(alice_account.private_key, 1, ADDRESS_LENGTH, f);
-        bytes_read += fread(alice_account.public_key, 1, ADDRESS_LENGTH, f);
-        fclose(f);
+        bytes_read = fread(alice_account.private_key, 1, ADDRESS_LENGTH, f_priv);
+        fclose(f_priv);
     }
 
-    if (create_new)
-    {
-        LOG_WARNING("🧾 Creating new random account and storing it (path " CONFIG_PATH ")");
-
-        unsigned char ed25519_sk[crypto_sign_ed25519_SECRETKEYBYTES];
-        randombytes_buf(seed, sizeof(seed));
-
-        crypto_sign_ed25519_seed_keypair(ed25519_pk, ed25519_sk, seed);
-
-        memcpy(alice_account.private_key, ed25519_sk, sizeof(alice_account.private_key));
-        memcpy(alice_account.public_key, ed25519_pk, sizeof(alice_account.public_key));
-
-        FILE *fw = fopen(CONFIG_PATH "private_key.bin", "wb");
-        if (fw == NULL)
-        {
-            LOG_ERROR("Cannot create " CONFIG_PATH "private_key.bin");
-            return VTC_ERROR_NOT_FOUND;
-        }
-        else
-        {
-            fwrite(ed25519_sk, 1, sizeof(ed25519_sk), fw);
-            fclose(f);
-        }
-    }
-    else if (f == NULL || bytes_read != 64)
+    if (f_priv == NULL || bytes_read != ADDRESS_LENGTH)
     {
         LOG_WARNING(
             "🤔 private_key.bin does not exist or keys not found. You can pass the -n flag to create a new account");
@@ -177,29 +211,35 @@ source_keys(bool create_new)
         return VTC_ERROR_NOT_FOUND;
     }
 
-    unsigned char checksum[32] = {0};
-    char public_key_checksum[36] = {0};
-    memcpy(public_key_checksum, alice_account.public_key, sizeof(alice_account.public_key));
+    FILE *f_pub = fopen(CONFIG_PATH "public_b32.txt", "r");
+    bytes_read = 0;
+    if (f_pub != NULL)
+    {
+        LOG_INFO("🔑 Loading public key from: %s", CONFIG_PATH "public_b32.txt");
 
-    err_code = sha512_256(alice_account.public_key,
-                          sizeof(alice_account.public_key),
-                          checksum,
-                          sizeof(checksum));
+        bytes_read = fread(public_b32, 1, PUBLIC_B32_STR_MAX_LENGTH, f_pub);
+        fclose(f_pub);
+
+        size_t len = strlen(public_b32);
+        while (public_b32[len - 1] == '\n' || public_b32[len - 1] == '\r')
+        {
+            public_b32[len - 1] = '\0';
+            len--;
+        }
+    }
+
+    if (f_pub == NULL || bytes_read < ADDRESS_LENGTH)
+    {
+        LOG_WARNING(
+            "🤔 public_b32.txt does not exist or keys not found. You can pass the -n flag to create a new account");
+
+        return VTC_ERROR_NOT_FOUND;
+    }
+
+    err_code = vertices_account_new_from_b32(public_b32, &alice_account.vtc_account);
     VTC_ASSERT(err_code);
 
-    memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);
-
-    size_t size = 58;
-    memset(alice_account.public_b32,
-           0,
-           sizeof(alice_account.public_b32)); // make sure init to zeros (string)
-    err_code = b32_encode((const char *) public_key_checksum,
-                          sizeof(public_key_checksum),
-                          alice_account.public_b32,
-                          &size);
-    VTC_ASSERT(err_code);
-
-    LOG_INFO("💳 Alice's account %s", alice_account.public_b32);
+    LOG_INFO("💳 Created Alice's account: %s", alice_account.vtc_account->public_b32);
 
     return VTC_SUCCESS;
 }
@@ -248,10 +288,6 @@ main(int argc, char *argv[])
     int ret = sodium_init();
     VTC_ASSERT_BOOL(ret == 0);
 
-    // read private key from file
-    err_code = source_keys(create_new);
-    VTC_ASSERT(err_code);
-
     // create new vertex
     err_code = vertices_new(&m_vertex);
     VTC_ASSERT(err_code);
@@ -278,27 +314,36 @@ main(int argc, char *argv[])
              version.minor,
              version.patch);
 
-    // create accounts
-    size_t alice_account_handle = 0;
-    err_code = vertices_account_add(&alice_account, &alice_account_handle);
-    VTC_ASSERT(err_code);
+    // Several ways to create/load accounts:
+    if (create_new)
+    {
+        // 1) create new one
+        err_code = create_new_account();
+        VTC_ASSERT(err_code);
+    }
+    else
+    {
+        // 2) from files
+        err_code = load_existing_account();
+        VTC_ASSERT(err_code);
+    }
 
-    // creating a receiver account is not mandatory but we can use it to load the public key from the
-    // base32-encoded string
-    size_t bob_account_handle = 0;
-    err_code = vertices_account_add(&bob_account, &bob_account_handle);
+    //  3) from b32 address
+    //      Note: creating a receiver account is not mandatory to send money to the account
+    //      but we can use it to load the public key from the account address
+    err_code = vertices_account_new_from_b32((char *) ACCOUNT_RECEIVER, &bob_account.vtc_account);
     VTC_ASSERT(err_code);
 
     LOG_INFO("🤑 %f Algos on Alice's account (%s)",
-             alice_account.amount / 1.e6,
-             alice_account.public_b32);
+             alice_account.vtc_account->amount / 1.e6,
+             alice_account.vtc_account->public_b32);
 
-    if (alice_account.amount < 1001000)
+    if (alice_account.vtc_account->amount < 1001000)
     {
         LOG_ERROR(
             "🙄 Amount available on account is too low to pass a transaction, consider adding Algos");
         LOG_INFO("👉 Go to https://bank.testnet.algorand.network/, dispense Algos to: %s",
-                 alice_account.public_b32);
+                 alice_account.vtc_account->public_b32);
         LOG_INFO("😎 Then wait for a few seconds for transaction to pass...");
         return 0;
     }
@@ -310,8 +355,8 @@ main(int argc, char *argv[])
             // send assets from account 0 to account 1
             char *notes = (char *) "Alice sent 1 Algo to Bob";
             err_code =
-                vertices_transaction_pay_new(alice_account_handle,
-                                             (char *) bob_account.public_key,
+                vertices_transaction_pay_new(alice_account.vtc_account,
+                                             (char *) bob_account.vtc_account->public_b32 /* or ACCOUNT_RECEIVER */,
                                              AMOUNT_SENT,
                                              notes);
             VTC_ASSERT(err_code);
@@ -326,7 +371,7 @@ main(int argc, char *argv[])
             kv.values[0].type = VALUE_TYPE_INTEGER;
             kv.values[0].value_uint = 20;
 
-            err_code = vertices_transaction_app_call(alice_account_handle, APP_ID, &kv);
+            err_code = vertices_transaction_app_call(alice_account.vtc_account, APP_ID, &kv);
             VTC_ASSERT(err_code);
         }
             break;
@@ -343,9 +388,9 @@ main(int argc, char *argv[])
     }
 
     // delete the created accounts from the Vertices wallet
-    err_code = vertices_account_del(alice_account_handle);
+    err_code = vertices_account_free(alice_account.vtc_account);
     VTC_ASSERT(err_code);
 
-    err_code = vertices_account_del(bob_account_handle);
+    err_code = vertices_account_free(bob_account.vtc_account);
     VTC_ASSERT(err_code);
 }

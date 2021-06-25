@@ -68,7 +68,6 @@ typedef struct
 typedef struct
 {
     char public_b32[PUBLIC_B32_STR_MAX_LENGTH]; //!< b32 public address, with `\0` termination character
-    unsigned char private_key[ADDRESS_LENGTH];  //!< 32-bytes private key
     unsigned char public_key[ADDRESS_LENGTH];   //!< 32-bytes public key
     int32_t amount;                             //!< amount of tokens on account
 } account_info_t;
