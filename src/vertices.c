@@ -6,7 +6,7 @@
 #include <account.h>
 #include <transaction.h>
 #include <vertices_log.h>
-#include <libc.h>
+#include <string.h>
 #include <sha512_256.h>
 #include <base32.h>
 #include "vertices.h"

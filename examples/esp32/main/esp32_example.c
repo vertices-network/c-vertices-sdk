@@ -3,8 +3,6 @@
 #include <base64.h>
 #include <sodium.h>
 #include <vertices_log.h>
-#include <sha512_256.h>
-#include <base32.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
@@ -48,18 +46,25 @@ extern const char algoexplorer_root_cert_pem_end[] asm("_binary_algoexplorer_roo
 extern const uint8_t signature_keys_start[] asm("_binary_private_key_bin_start");
 extern const uint8_t signature_key_end[] asm("_binary_private_key_bin_end");
 
+extern const uint8_t account_address_b32_start[] asm("_binary_account_address_start");
+extern const uint8_t account_address_b32_end[] asm("_binary_account_address_end");
+
 static provider_info_t providers =
     {.url = (char *) SERVER_URL, .port = SERVER_PORT, .header = (char *) SERVER_TOKEN_HEADER, .cert_pem = algoexplorer_root_cert_pem_start};
 
-// Alice's account is used to send data, private key is taken from config/private_key.bin
-static account_info_t alice_account =
-    {.public_b32 = {""},
-        .private_key = { 0 },
-        .amount = 0};
+/// We store anything related to the account into the below structure
+/// The private key is used outside of the Vertices library:
+///    you don't have to pass the private key to the SDK as signing is done outside
+typedef struct
+{
+    unsigned char private_key[ADDRESS_LENGTH];  //!< 32-bytes private key
+    account_info_t *vtc_account;               //!< pointer to Vertices account data
+} account_t;
+
+// Alice's account is used to send data, keys will be retrived from config/key_files.txt
+static account_t alice_account = {.private_key = {0}, .vtc_account = NULL};
 // Bob is receiving the money 😎
-static account_info_t bob_account =
-    {.public_b32 = ACCOUNT_RECEIVER, .private_key = {
-        0}, .amount = 0};
+static account_t bob_account = {.private_key = {0}, .vtc_account = NULL};
 
 static ret_code_t
 vertices_evt_handler(vtc_evt_t *evt);
@@ -81,12 +86,14 @@ vertices_evt_handler(vtc_evt_t *evt)
             err_code = vertices_transaction_get(evt->bufid, &tx);
             if (err_code == VTC_SUCCESS)
             {
-                LOG_DEBUG("About to sign tx: data length %zu", tx->payload_length);
+                LOG_DEBUG("About to sign tx: data length %u", tx->payload_length);
 
                 // libsodium wants to have private and public keys concatenated
                 unsigned char keys[crypto_sign_ed25519_SECRETKEYBYTES] = {0};
                 memcpy(keys, alice_account.private_key, sizeof(alice_account.private_key));
-                memcpy(&keys[32], alice_account.public_key, sizeof(alice_account.public_key));
+                memcpy(&keys[32],
+                       alice_account.vtc_account->public_key,
+                       ADDRESS_LENGTH);
 
                 // prepend "TX" to the payload before signing
                 unsigned char to_be_signed[tx->payload_length + 2];
@@ -104,7 +111,7 @@ vertices_evt_handler(vtc_evt_t *evt)
                            sizeof(tx->signature),
                            b64_signature,
                            &b64_signature_len);
-                LOG_DEBUG("Signature %s (%zu bytes)", b64_signature, b64_signature_len);
+                LOG_DEBUG("Signature %s (%u bytes)", b64_signature, b64_signature_len);
 
                 // let's push the new state
                 evt->type = VTC_EVT_TX_SENDING;
@@ -127,47 +134,27 @@ vertices_evt_handler(vtc_evt_t *evt)
 }
 
 static void
-source_keys()
+load_existing_account()
 {
-    // copy keys, first part is the private key and last part is the public key
-    memcpy(alice_account.private_key, signature_keys_start, ADDRESS_LENGTH);
-    memcpy(alice_account.public_key, &signature_keys_start[ADDRESS_LENGTH], ADDRESS_LENGTH);
+    char public_b32[PUBLIC_B32_STR_MAX_LENGTH] = {0};
 
-    ESP_LOGD(TAG, "Sourced keys: 0x%02x%02x%02x... 0x%02x%02x%02x...", alice_account.private_key[0],
-             alice_account.private_key[1],
-             alice_account.private_key[2],
-             alice_account.public_key[0],
-             alice_account.public_key[1],
-             alice_account.public_key[2]);
+    // Account address length (remove 1 char: `\n`)
+    size_t len = account_address_b32_end-account_address_b32_start-1;
+
+    // copy keys from Flash
+    memcpy(alice_account.private_key, signature_keys_start, ADDRESS_LENGTH);
+    memcpy(public_b32, account_address_b32_start, len);
 
     // let's compute the Algorand public address
-    unsigned char checksum[32] = {0};
-    char public_key_checksum[36] = {0};
-    memcpy(public_key_checksum, alice_account.public_key, sizeof(alice_account.public_key));
-
-    ret_code_t err_code = sha512_256(alice_account.public_key, sizeof(alice_account.public_key), checksum, sizeof(checksum));
+    ret_code_t err_code = vertices_account_new_from_b32(public_b32, &alice_account.vtc_account);
     VTC_ASSERT(err_code);
 
-    memcpy(&public_key_checksum[32], &checksum[32 - 4], 4);
-
-    size_t size = 58;
-    memset(alice_account.public_b32,
-           0,
-           sizeof(alice_account.public_b32)); // make sure init to zeros (string)
-    err_code = b32_encode((const char *) public_key_checksum,
-                          sizeof(public_key_checksum),
-                          alice_account.public_b32,
-                          &size);
-    VTC_ASSERT(err_code);
-
-    ESP_LOGI(TAG, "💳 Alice's account %s", alice_account.public_b32);
+    ESP_LOGI(TAG, "💳 Alice's account %s", alice_account.vtc_account->public_b32);
 }
 
 _Noreturn void
 vtc_wallet_task(void *param)
 {
-    source_keys();
-
     // create new vertex
     ret_code_t err_code = vertices_new(&m_vertex);
     VTC_ASSERT(err_code);
@@ -194,35 +181,34 @@ vtc_wallet_task(void *param)
              version.minor,
              version.patch);
 
-    // create accounts
-    size_t alice_account_handle = 0;
-    err_code = vertices_account_add(&alice_account, &alice_account_handle);
-    VTC_ASSERT(err_code);
+    // Add account to wallet from keys
+    load_existing_account();
 
     // we want at least 1.001 Algo available
-    while (alice_account.amount < 1001000)
+    while (alice_account.vtc_account->amount < 1001000)
     {
         ESP_LOGW(TAG,
-                 "🙄 %f Algos available on account. It's too low to pass a transaction, consider adding Algos", alice_account.amount / 1.e6);
+                 "🙄 %f Algos available on account. It's too low to pass a transaction, consider adding Algos",
+                 alice_account.vtc_account->amount / 1.e6);
         ESP_LOGI(TAG, "👉 Go to https://bank.testnet.algorand.network/, dispense Algos to: %s",
-                 alice_account.public_b32);
+                 alice_account.vtc_account->public_b32);
         ESP_LOGI(TAG, "😎 Then wait for a few seconds for transaction to pass...");
         ESP_LOGI(TAG, "⏳ Retrying in 1 minute");
 
         vTaskDelay(60000);
 
-        vertices_account_update(alice_account_handle);
+        vertices_account_free(alice_account.vtc_account);
     }
 
     ESP_LOGI(TAG,
              "🤑 %f Algos on Alice's account (%s)",
-             alice_account.amount / 1.e6,
-             alice_account.public_b32);
+             alice_account.vtc_account->amount / 1.e6,
+             alice_account.vtc_account->public_b32);
 
-    // creating a receiver account is not mandatory but we can use it to load the public key from the
-    // base32-encoded string
-    size_t bob_account_handle = 0;
-    err_code = vertices_account_add(&bob_account, &bob_account_handle);
+    // create account from b32 address
+    //      Note: creating a receiver account is not mandatory to send money to the account
+    //      but we can use it to load the public key from the account address
+    err_code = vertices_account_new_from_b32(ACCOUNT_RECEIVER, &bob_account.vtc_account);
     VTC_ASSERT(err_code);
 
     // send assets from Alice's account to Bob's account
@@ -231,8 +217,8 @@ vtc_wallet_task(void *param)
     VTC_ASSERT_BOOL(len < 64);
 
     err_code =
-        vertices_transaction_pay_new(alice_account_handle,
-                                     (char *) bob_account.public_key,
+        vertices_transaction_pay_new(alice_account.vtc_account,
+                                     (char *) bob_account.vtc_account->public_b32,
                                      AMOUNT_SENT,
                                      notes);
     VTC_ASSERT(err_code);
@@ -243,7 +229,7 @@ vtc_wallet_task(void *param)
     kv.values[0].type = VALUE_TYPE_INTEGER;
     kv.values[0].value_uint = 32;
 
-    err_code = vertices_transaction_app_call(alice_account_handle, APP_ID, &kv);
+    err_code = vertices_transaction_app_call(alice_account.vtc_account, APP_ID, &kv);
     VTC_ASSERT(err_code);
 
     while (1)
@@ -260,10 +246,10 @@ vtc_wallet_task(void *param)
             ESP_LOGI(TAG, "💸 Alice sent %f algo to Bob", AMOUNT_SENT / 1.e6);
 
             // delete the created accounts from the Vertices wallet
-            err_code = vertices_account_del(alice_account_handle);
+            err_code = vertices_account_free(alice_account.vtc_account);
             VTC_ASSERT(err_code);
 
-            err_code = vertices_account_del(bob_account_handle);
+            err_code = vertices_account_free(bob_account.vtc_account);
             VTC_ASSERT(err_code);
         }
         else
