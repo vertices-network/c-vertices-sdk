@@ -36,8 +36,8 @@ ret_code_t
 vertices_account_free(account_info_t *account);
 
 /// Send \c amount of tokens from \c account_id to \c receiver
-/// \param account_id Handle to the Sender account
-/// \param receiver Receiver account
+/// \param account Handle to the Sender account
+/// \param receiver Receiver account address
 /// \param amount Amount of token to be sent
 /// \param params Pointer to type, where type is known by blockchain implementation. Can be NULL.
 /// \return \c VTC_ERROR_INVALID_PARAM if one parameter is incorrect
@@ -45,7 +45,7 @@ ret_code_t
 vertices_transaction_pay_new(account_info_t *account, char *receiver, uint64_t amount, void *params);
 
 /// Call Smart Contract DApp
-/// \param account_id Account handle, see \c vertices_account_new_from_b32
+/// \param account Account handle, see \c vertices_account_new_from_b32
 /// \param app_id Application ID
 /// \param params Pointer to type, where type is known by blockchain implementation. Can be NULL.
 /// \return
