@@ -138,7 +138,7 @@ account_free(account_info_t *account)
     {
         if (account == (account_info_t *) &m_accounts[i].account)
         {
-            m_accounts[i].status = 0;
+            m_accounts[i].status = ACCOUNT_NONE;
             memset(&m_accounts[i].account, 0, sizeof(account_details_t));
             break;
         }
