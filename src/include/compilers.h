@@ -203,8 +203,8 @@
 #endif
 
 #ifndef le64toh
-#endif
 #define	le64toh(x)	((uint64_t)(x))
+#endif
 
 #else
 #error "Unknown architecture with current compiler, consider adding a way to detect byte-order"
