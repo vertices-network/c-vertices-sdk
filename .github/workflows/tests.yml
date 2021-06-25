@@ -1,9 +1,9 @@
-name: all
+name: tests
 
 on:
-  create:
-    tags:
-      - 'v/*'
+  push:
+    branches:
+      - main
 
 env:
   # Not used yet: Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -45,4 +45,5 @@ jobs:
       # then starts the example: Alice send 1 Algo to Bob
       run: |
         ./utils/str_to_bin.py "$ACCOUNT_KEYS" examples/unix/config/private_key.bin
+        echo "$ACCOUNT_ADDRESS" >> examples/unix/config/public_b32.txt
         ./build/examples/unix/unix_example
