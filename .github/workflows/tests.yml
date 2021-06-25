@@ -2,8 +2,8 @@ name: tests
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v/*'
 
 env:
   # Not used yet: Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
