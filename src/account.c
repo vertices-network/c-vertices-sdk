@@ -10,7 +10,8 @@
 
 #define ACCOUNTS_MAXIMUM_COUNT  2
 
-enum account_status_e {
+enum account_status_e
+{
     ACCOUNT_NONE = 0,
     ACCOUNT_ADDED,
 };
@@ -139,7 +140,13 @@ account_free(account_info_t *account)
         {
             m_accounts[i].status = 0;
             memset(&m_accounts[i].account, 0, sizeof(account_details_t));
+            break;
         }
+    }
+
+    if (i == ACCOUNTS_MAXIMUM_COUNT)
+    {
+        return VTC_ERROR_NOT_FOUND;
     }
 
     LOG_INFO("👛 Deleted account from wallet: #%u", i);
