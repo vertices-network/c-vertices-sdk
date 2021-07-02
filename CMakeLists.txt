@@ -49,5 +49,9 @@ elseif (COMPILE_UNIX)
     add_subdirectory(external/mbedtls)
     add_subdirectory(external/cJSON)
 else()
-    message(STATUS "Vertices SDK examples: none")
+    message(STATUS "Vertices SDK examples: generic")
+
+    # Let's use the mbedtls and cJSON library provided with the SDK
+    add_subdirectory(external/mbedtls)
+    add_subdirectory(external/cJSON)
 endif ()

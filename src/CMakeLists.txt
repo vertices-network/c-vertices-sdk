@@ -24,6 +24,7 @@ set(VERTICES_INC_DIRS
         "include"
         "../external/cJSON"
         "../external/mpack/src/mpack"
+        "../external/mbedtls/include"
         )
 
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
@@ -78,5 +79,14 @@ elseif (COMPILE_UNIX)
     target_compile_options(vertices PRIVATE -pedantic -Wall -Werror -Wstrict-prototypes -Wwrite-strings -Wshadow -Winit-self -Wformat=2 -Wmissing-prototypes -Wstrict-overflow=2 -Wc++-compat -Wundef -Wconversion -Wno-missing-braces)
 
 else ()
-    message(WARNING "We are not able to compile for any other platform yet")
+    message(WARNING "Generic build")
+
+    add_definitions(-DBLOCKCHAIN_PROVIDER=$ENV{BLOCKCHAIN_PROVIDER})
+
+    add_library(vertices STATIC ${VERTICES_SRC_FILES})
+
+    target_include_directories(vertices PRIVATE ${VERTICES_INC_DIRS})
+    target_include_directories(vertices PUBLIC ../include)
+
+    target_link_libraries(vertices cjson mbedcrypto)
 endif ()
