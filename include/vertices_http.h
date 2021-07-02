@@ -24,19 +24,26 @@ typedef struct
     size_t size;
 } payload_t;
 
-typedef struct
-{
-    char *url;
-    short port;
-    char *token;
-} http_remote_t;
-
+/// Init HTTP client
+/// \param provider Remote API URL, port, specific header and certificate if needed by the client
+/// \param response_payload_cb Pointer to \payload_t where the response will be written.
+/// \return \c VTC_SUCCESS on success, otherwise error depends on implementation
 ret_code_t
 http_init(const provider_info_t *provider,
           size_t (*response_payload_cb)(void *chunk,
                                         size_t chunk_size,
                                         payload_t *response_payload));
 
+/// HTTP GET request
+/// \param provider pointer to provider (url, port..)
+/// \param relative_path path to append to the provider base URL
+/// \param headers Headers string, each one must have the format "key:value\n\r"
+/// \param response_buf Pointer to where to put the response data (body)
+/// \param response_code HTTP response code
+/// \return error codes:
+/// - \c VTC_SUCCESS on success
+/// - \c VTC_ERROR_OFFLINE if offline
+/// - \c VTC_HTTP_ERROR (+error) on HTTP error.
 ret_code_t
 http_get(const provider_info_t *provider,
          const char *relative_path,
@@ -44,13 +51,18 @@ http_get(const provider_info_t *provider,
          payload_t *response_buf,
          uint32_t *response_code);
 
-/// Post HTTP payload
-/// \param provider
-/// \param relative_path
-/// \param headers Headers, must be separated by `\r\n`
-/// \param body
-/// \param body_size
-/// \return
+/// HTTP POST request
+/// \param provider pointer to provider (url, port..)
+/// \param relative_path path to append to the provider base URL
+/// \param headers Headers string, each one must have the format "key:value\n\r"
+/// \param body HTTP body
+/// \param body_size size of \c body array
+/// \param response_buf Pointer to where to put the response data (body)
+/// \param response_code HTTP response code
+/// \return error codes:
+/// - \c VTC_SUCCESS on success
+/// - \c VTC_ERROR_OFFLINE if offline
+/// - \c VTC_HTTP_ERROR (+error) on HTTP error.
 ret_code_t
 http_post(const provider_info_t *provider,
           const char *relative_path,
