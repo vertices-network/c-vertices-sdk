@@ -20,7 +20,7 @@ typedef struct
     provider_version_t version;
     payload_t response_buffer;
     size_t
-    (*response_payload_cb)(void *received_data, size_t size, size_t count, void *response_payload);
+    (*response_payload_cb)(void *received_data, size_t size, payload_t *response_payload);
 } provider_t;
 
 ret_code_t

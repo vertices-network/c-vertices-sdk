@@ -33,10 +33,9 @@ typedef struct
 
 ret_code_t
 http_init(const provider_info_t *provider,
-          size_t (*response_payload_cb)(void *received_data,
-                                        size_t size,
-                                        size_t count,
-                                        void *response_payload));
+          size_t (*response_payload_cb)(void *chunk,
+                                        size_t chunk_size,
+                                        payload_t *response_payload));
 
 ret_code_t
 http_get(const provider_info_t *provider,

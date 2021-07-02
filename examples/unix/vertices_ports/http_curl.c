@@ -9,10 +9,25 @@
 #include <string.h>
 
 static CURL *m_curl;
+static size_t
+(*m_response_payload_cb)(void *chunk,
+                         size_t chunk_size,
+                         payload_t *response_payload);
+
+static size_t
+response_callback(void *chunk,
+                  size_t size,
+                  size_t nmemb,
+                  void *userdata)
+{
+    return m_response_payload_cb(chunk, size * nmemb, (payload_t *) userdata);
+}
 
 ret_code_t
 http_init(const provider_info_t *provider,
-          size_t (*response_payload_cb)(void *, size_t, size_t, void *))
+          size_t (*response_payload_cb)(void *chunk,
+                                        size_t chunk_size,
+                                        payload_t *response_payload))
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     m_curl = curl_easy_init();
@@ -26,7 +41,7 @@ http_init(const provider_info_t *provider,
     {
         curl_easy_setopt(m_curl, CURLOPT_PORT, provider->port);
     }
-    curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, response_payload_cb);
+    curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, (void *) response_callback);
 
     return VTC_SUCCESS;
 }

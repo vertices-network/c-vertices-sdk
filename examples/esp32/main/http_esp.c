@@ -15,10 +15,9 @@ static esp_http_client_handle_t m_client_handle = NULL;
 static size_t
 (*m_response_payload_cb)(void *received_data,
                          size_t size,
-                         size_t count,
-                         void *response_payload);
+                         payload_t *response_payload);
 
-static payload_t *m_response_buf = NULL;
+static payload_t *m_response_buf = NULL; // pointer to user data
 
 static esp_err_t
 http_event_handle(esp_http_client_event_t *evt)
@@ -52,7 +51,7 @@ http_event_handle(esp_http_client_event_t *evt)
             {
                 if (m_response_payload_cb != NULL)
                 {
-                    m_response_payload_cb(evt->data, evt->data_len, 1, m_response_buf);
+                    m_response_payload_cb(evt->data, evt->data_len, m_response_buf);
                 }
             }
         }
@@ -112,10 +111,9 @@ set_headers(const char *headers, size_t len)
 
 ret_code_t
 http_init(const provider_info_t *provider,
-          size_t (*response_payload_cb)(void *received_data,
-                                        size_t size,
-                                        size_t count,
-                                        void *response_payload))
+          size_t (*response_payload_cb)(void *chunk,
+                                        size_t chunk_size,
+                                        payload_t *response_payload))
 {
     if (response_payload_cb != NULL)
     {

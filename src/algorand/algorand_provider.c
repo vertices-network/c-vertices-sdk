@@ -13,43 +13,41 @@
 #include "cJSON.h"
 
 static size_t
-response_payload_callback(void *received_data, size_t size, size_t count, void *response_payload);
+response_payload_callback(void *chunk, size_t size, payload_t *response_payload);
 
 static char rx_buf[HTTP_MAXIMUM_CONTENT_LENGTH];
 static provider_t m_provider = {0};
 
 static size_t
-response_payload_callback(void *received_data, size_t size, size_t count, void *response_payload)
+response_payload_callback(void *chunk, size_t size, payload_t *response_payload)
 {
-    size_t received_data_size = size * count;
+    LOG_DEBUG("Received %zu bytes", size);
 
-    LOG_DEBUG("Received %zu bytes", received_data_size);
-
-    VTC_ASSERT_BOOL(received_data_size < HTTP_MAXIMUM_CONTENT_LENGTH);
+    VTC_ASSERT_BOOL(size < HTTP_MAXIMUM_CONTENT_LENGTH);
 
     if (response_payload != NULL)
     {
         payload_t *payload = (payload_t *) response_payload;
 
         // append in buffer
-        memcpy(&rx_buf[payload->size], received_data, received_data_size);
+        memcpy(&rx_buf[payload->size], chunk, size);
 
         payload->data = rx_buf;
-        payload->size += received_data_size;
+        payload->size += size;
 
         rx_buf[payload->size] = 0;
     }
     else
     {
-        memcpy(rx_buf, received_data, received_data_size);
-        rx_buf[received_data_size] = 0;
+        memcpy(rx_buf, chunk, size);
+        rx_buf[size] = 0;
     }
 
     // might not be full ascii, so weird things can be printed
     // todo consider removing it or printing hex dump
     LOG_DEBUG("%s", rx_buf);
 
-    return received_data_size;
+    return size;
 }
 
 
