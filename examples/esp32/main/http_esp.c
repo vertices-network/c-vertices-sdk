@@ -174,6 +174,11 @@ http_get(const provider_info_t *provider,
         ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %d",
                  *response_code,
                  esp_http_client_get_content_length(m_client_handle));
+
+        if (*response_code >= 300)
+        {
+            return VTC_HTTP_ERROR;
+        }
     }
     else
     {
@@ -241,6 +246,11 @@ http_post(const provider_info_t *provider,
         ESP_LOGI(TAG, "HTTP POST Status = %d, content_length = %d",
                  *response_code,
                  esp_http_client_get_content_length(m_client_handle));
+
+        if (*response_code >= 300)
+        {
+            return VTC_HTTP_ERROR;
+        }
     }
     else
     {
