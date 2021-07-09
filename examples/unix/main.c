@@ -72,7 +72,9 @@ vertices_evt_handler(vtc_evt_t *evt)
                 to_be_signed[1] = 'X';
 
                 // copy body
-                memcpy(&to_be_signed[2], &tx->payload[tx->payload_header_length], tx->payload_body_length);
+                memcpy(&to_be_signed[2],
+                       &tx->payload[tx->payload_header_length],
+                       tx->payload_body_length);
 
                 // sign the payload
                 crypto_sign_ed25519_detached(tx->signature,
@@ -86,8 +88,9 @@ vertices_evt_handler(vtc_evt_t *evt)
                            &b64_signature_len);
                 LOG_DEBUG("Signature %s (%zu bytes)", b64_signature, b64_signature_len);
 
-                evt->type = VTC_EVT_TX_SENDING;
-                err_code = vertices_event_schedule(evt);
+                // send event to send the signed TX
+                vtc_evt_t sched_evt = {.type = VTC_EVT_TX_SENDING, .bufid = evt->bufid};
+                err_code = vertices_event_schedule(&sched_evt);
             }
         }
             break;
@@ -121,7 +124,9 @@ vertices_evt_handler(vtc_evt_t *evt)
             // which results in 5-bytes to be added before the payload at `payload_offset`
             char payload[tx->payload_body_length + 5];
             payload[0] = (char) 0x81; // starting flag for map of one element
-            memcpy(&payload[1], &tx->payload[tx->payload_header_length - 4], tx->payload_body_length + 4);
+            memcpy(&payload[1],
+                   &tx->payload[tx->payload_header_length - 4],
+                   tx->payload_body_length + 4);
 
             fwrite(payload, sizeof payload, 1, ftx);
             fclose(ftx);
