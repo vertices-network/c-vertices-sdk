@@ -36,7 +36,7 @@ http_init(const provider_info_t *provider,
 /// \return error codes:
 /// - \c VTC_SUCCESS on success
 /// - \c VTC_ERROR_OFFLINE if offline
-/// - \c VTC_HTTP_ERROR (+error) on HTTP error.
+/// - \c VTC_HTTP_ERROR on HTTP error: check response_code.
 ret_code_t
 http_get(const provider_info_t *provider,
          const char *relative_path,
