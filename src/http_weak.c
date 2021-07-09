@@ -14,7 +14,7 @@
  */
 
 
-ret_code_t
+__WEAK ret_code_t
 http_init(const provider_info_t *provider,
           size_t (*response_payload_cb)(char *chunk,
                                         size_t chunk_size))
