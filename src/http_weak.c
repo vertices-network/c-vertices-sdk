@@ -17,8 +17,7 @@
 ret_code_t
 http_init(const provider_info_t *provider,
           size_t (*response_payload_cb)(void *chunk,
-                                        size_t chunk_size,
-                                        payload_t *response_payload))
+                                        size_t chunk_size))
 {
     LOG_ERROR("Weak implementation of http_init");
 
@@ -29,7 +28,6 @@ __WEAK ret_code_t
 http_get(const provider_info_t *provider,
          const char *relative_path,
          const char *headers,
-         payload_t *response_buf,
          uint32_t *response_code)
 {
     LOG_ERROR("Weak implementation of http_get");
@@ -43,7 +41,6 @@ http_post(const provider_info_t *provider,
           char *headers,
           const char *body,
           size_t body_size,
-          payload_t *response_buf,
           uint32_t *response_code)
 {
     LOG_ERROR("Weak implementation of http_post");

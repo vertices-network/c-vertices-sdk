@@ -11,8 +11,7 @@
 static CURL *m_curl;
 static size_t
 (*m_response_payload_cb)(void *chunk,
-                         size_t chunk_size,
-                         payload_t *response_payload);
+                         size_t chunk_size);
 
 static size_t
 response_callback(void *chunk,
@@ -20,14 +19,13 @@ response_callback(void *chunk,
                   size_t nmemb,
                   void *userdata)
 {
-    return m_response_payload_cb(chunk, size * nmemb, (payload_t *) userdata);
+    return m_response_payload_cb(chunk, size * nmemb);
 }
 
 ret_code_t
 http_init(const provider_info_t *provider,
           size_t (*response_payload_cb)(void *chunk,
-                                        size_t chunk_size,
-                                        payload_t *response_payload))
+                                        size_t chunk_size))
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     m_curl = curl_easy_init();
@@ -36,6 +34,8 @@ http_init(const provider_info_t *provider,
     {
         return VTC_ERROR_INTERNAL;
     }
+
+    m_response_payload_cb = response_payload_cb;
 
     if (provider->port != 0)
     {
@@ -50,7 +50,6 @@ ret_code_t
 http_get(const provider_info_t *provider,
          const char *relative_path,
          const char *headers,
-         payload_t *response_buf,
          uint32_t *response_code)
 {
     VTC_ASSERT_BOOL(m_curl != NULL);
@@ -58,12 +57,6 @@ http_get(const provider_info_t *provider,
     ret_code_t err_code = VTC_SUCCESS;
     CURLcode res;
     long response;
-
-    // reset buffer used in GET
-    if (response_buf != NULL)
-    {
-        response_buf->size = 0;
-    }
 
     char url_full[512] = {0};
     sprintf(url_full, "%s%s", provider->url, relative_path);
@@ -75,7 +68,7 @@ http_get(const provider_info_t *provider,
         chunk = curl_slist_append(chunk, headers);
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, chunk);
         curl_easy_setopt(m_curl, CURLOPT_URL, url_full);
-        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, response_buf);
+        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, NULL);
 
 #ifdef DEBUG
         curl_easy_setopt(m_curl, CURLOPT_VERBOSE, 1L);
@@ -120,19 +113,12 @@ http_post(const provider_info_t *provider,
           char *headers,
           const char *body,
           size_t body_size,
-          payload_t *response_buf,
           uint32_t *response_code)
 {
     VTC_ASSERT_BOOL(m_curl != NULL);
 
     ret_code_t err_code = VTC_SUCCESS;
     CURLcode res;
-
-    // reset buffer used in POST
-    if (response_buf != NULL)
-    {
-        response_buf->size = 0;
-    }
 
     char url_full[256] = {0};
     sprintf(url_full, "%s%s", provider->url, relative_path);
@@ -168,7 +154,7 @@ http_post(const provider_info_t *provider,
         chunk = curl_slist_append(chunk, header_line);
 
         curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, chunk);
-        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, response_buf);
+        curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, NULL);
 
         /* Perform the request, res will get the return code */
         res = curl_easy_perform(m_curl);

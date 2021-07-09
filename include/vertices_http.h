@@ -14,31 +14,24 @@
 extern "C" {
 #endif
 
+// if not defined before, set default value
 #ifndef HTTP_MAXIMUM_CONTENT_LENGTH
 #define HTTP_MAXIMUM_CONTENT_LENGTH 4096
 #endif
 
-typedef struct
-{
-    char *data;
-    size_t size;
-} payload_t;
-
 /// Init HTTP client
 /// \param provider Remote API URL, port, specific header and certificate if needed by the client
-/// \param response_payload_cb Pointer to \payload_t where the response will be written.
+/// \param response_payload_cb Function callback to call when data is ready to be parsed
 /// \return \c VTC_SUCCESS on success, otherwise error depends on implementation
 ret_code_t
 http_init(const provider_info_t *provider,
           size_t (*response_payload_cb)(void *chunk,
-                                        size_t chunk_size,
-                                        payload_t *response_payload));
+                                        size_t chunk_size));
 
 /// HTTP GET request
 /// \param provider pointer to provider (url, port..)
 /// \param relative_path path to append to the provider base URL
 /// \param headers Headers string, each one must have the format "key:value\n\r"
-/// \param response_buf Pointer to where to put the response data (body)
 /// \param response_code HTTP response code
 /// \return error codes:
 /// - \c VTC_SUCCESS on success
@@ -48,7 +41,6 @@ ret_code_t
 http_get(const provider_info_t *provider,
          const char *relative_path,
          const char *headers,
-         payload_t *response_buf,
          uint32_t *response_code);
 
 /// HTTP POST request
@@ -57,7 +49,6 @@ http_get(const provider_info_t *provider,
 /// \param headers Headers string, each one must have the format "key:value\n\r"
 /// \param body HTTP body
 /// \param body_size size of \c body array
-/// \param response_buf Pointer to where to put the response data (body)
 /// \param response_code HTTP response code
 /// \return error codes:
 /// - \c VTC_SUCCESS on success
@@ -69,7 +60,6 @@ http_post(const provider_info_t *provider,
           char *headers,
           const char *body,
           size_t body_size,
-          payload_t *response_buf,
           uint32_t *response_code);
 
 void

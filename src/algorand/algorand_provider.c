@@ -13,35 +13,21 @@
 #include "cJSON.h"
 
 static size_t
-response_payload_callback(void *chunk, size_t size, payload_t *response_payload);
+response_payload_callback(void *chunk, size_t size);
 
 static char rx_buf[HTTP_MAXIMUM_CONTENT_LENGTH];
 static provider_t m_provider = {0};
 
 static size_t
-response_payload_callback(void *chunk, size_t size, payload_t *response_payload)
+response_payload_callback(void *chunk, size_t size)
 {
     LOG_DEBUG("Received %zu bytes", size);
 
     VTC_ASSERT_BOOL(size < HTTP_MAXIMUM_CONTENT_LENGTH);
 
-    if (response_payload != NULL)
-    {
-        payload_t *payload = (payload_t *) response_payload;
-
-        // append in buffer
-        memcpy(&rx_buf[payload->size], chunk, size);
-
-        payload->data = rx_buf;
-        payload->size += size;
-
-        rx_buf[payload->size] = 0;
-    }
-    else
-    {
-        memcpy(rx_buf, chunk, size);
-        rx_buf[size] = 0;
-    }
+    memcpy(&m_provider.response_buffer.data[m_provider.response_buffer.size], chunk, size);
+    m_provider.response_buffer.size += size;
+    m_provider.response_buffer.data[m_provider.response_buffer.size] = 0;
 
     // might not be full ascii, so weird things can be printed
     // todo consider removing it or printing hex dump
@@ -60,10 +46,10 @@ provider_account_info_get(account_details_t *account)
     VTC_ASSERT_BOOL(ret < 128 && ret >= 0);
 
     uint32_t response_code = 0;
+    m_provider.response_buffer.size = 0;
     ret_code_t err_code = http_get(&m_provider.provider,
                                    relative_path,
-                                   m_provider.provider.header,
-                                   &m_provider.response_buffer, &response_code);
+                                   m_provider.provider.header, &response_code);
     if (err_code == VTC_SUCCESS)
     {
         parser_account(rx_buf, m_provider.response_buffer.size, account);
@@ -81,12 +67,12 @@ provider_tx_params_load(transaction_t *tx)
     static uint64_t m_first_valid = 0;
 
     uint32_t response_code = 0;
+    m_provider.response_buffer.size = 0;
     ret_code_t
         err_code =
         http_get(&m_provider.provider,
                  (char *) "/v2/transactions/params",
-                 m_provider.provider.header,
-                 &m_provider.response_buffer, &response_code);
+                 m_provider.provider.header, &response_code);
 
     if (err_code == VTC_SUCCESS)
     {
@@ -178,11 +164,12 @@ provider_tx_post(const uint8_t *bin_payload, size_t length, unsigned char *tx_id
     }
 
     uint32_t response_code = 0;
+    m_provider.response_buffer.size = 0;
     err_code =
         http_post(&m_provider.provider,
                   (char *) "/v2/transactions",
                   header,
-                  (const char *) bin_payload, length, &m_provider.response_buffer, &response_code);
+                  (const char *) bin_payload, length, &response_code);
 
     if (err_code == VTC_SUCCESS)
     {
@@ -220,12 +207,12 @@ ret_code_t
 provider_version_get(provider_version_t *version)
 {
     uint32_t response_code = 0;
+    m_provider.response_buffer.size = 0;
     ret_code_t
         err_code =
         http_get(&m_provider.provider,
                  (char *) "/versions",
-                 m_provider.provider.header,
-                 &m_provider.response_buffer, &response_code);
+                 m_provider.provider.header, &response_code);
 
     if (err_code == VTC_SUCCESS)
     {
@@ -316,12 +303,12 @@ ret_code_t
 provider_ping()
 {
     uint32_t response_code = 0;
+    m_provider.response_buffer.size = 0;
     ret_code_t
         err_code =
         http_get(&m_provider.provider,
                  (char *) "/health",
-                 m_provider.provider.header,
-                 &m_provider.response_buffer, &response_code);
+                 m_provider.provider.header, &response_code);
     return err_code;
 }
 
@@ -335,6 +322,8 @@ provider_init(provider_info_t *provider)
     m_provider.provider.header = provider->header;
     m_provider.provider.cert_pem = provider->cert_pem;
 
+    m_provider.response_buffer.data = rx_buf;
+    m_provider.response_buffer.size = 0;
     m_provider.response_payload_cb = response_payload_callback;
 
     ret_code_t err_code = http_init(&m_provider.provider, response_payload_callback);

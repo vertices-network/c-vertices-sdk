@@ -16,11 +16,17 @@
 
 typedef struct
 {
+    char *data;
+    size_t size;
+} payload_t;
+
+typedef struct
+{
     provider_info_t provider;
     provider_version_t version;
     payload_t response_buffer;
     size_t
-    (*response_payload_cb)(void *received_data, size_t size, payload_t *response_payload);
+    (*response_payload_cb)(void *received_data, size_t size);
 } provider_t;
 
 ret_code_t

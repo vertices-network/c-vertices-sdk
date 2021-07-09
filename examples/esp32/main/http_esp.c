@@ -14,10 +14,7 @@ static const char *TAG = "http_esp";
 static esp_http_client_handle_t m_client_handle = NULL;
 static size_t
 (*m_response_payload_cb)(void *received_data,
-                         size_t size,
-                         payload_t *response_payload);
-
-static payload_t *m_response_buf = NULL; // pointer to user data
+                         size_t size);
 
 static esp_err_t
 http_event_handle(esp_http_client_event_t *evt)
@@ -51,7 +48,7 @@ http_event_handle(esp_http_client_event_t *evt)
             {
                 if (m_response_payload_cb != NULL)
                 {
-                    m_response_payload_cb(evt->data, evt->data_len, m_response_buf);
+                    m_response_payload_cb(evt->data, evt->data_len);
                 }
             }
         }
@@ -112,8 +109,7 @@ set_headers(const char *headers, size_t len)
 ret_code_t
 http_init(const provider_info_t *provider,
           size_t (*response_payload_cb)(void *chunk,
-                                        size_t chunk_size,
-                                        payload_t *response_payload))
+                                        size_t chunk_size))
 {
     if (response_payload_cb != NULL)
     {
@@ -131,25 +127,17 @@ ret_code_t
 http_get(const provider_info_t *provider,
          const char *relative_path,
          const char *headers,
-         payload_t *response_buf,
          uint32_t *response_code)
 {
     esp_http_client_config_t config = {
         .host = provider->url,
         .path = relative_path,
         .event_handler = http_event_handle,
-        .user_data = response_buf->data,        // Pass address of local buffer to get response
-        .buffer_size = response_buf->size,
+        .user_data = NULL,        // Pass address of local buffer to get response
+        .buffer_size = 0,
         .disable_auto_redirect = false,
         .cert_pem = provider->cert_pem,
     };
-
-    if (response_buf != NULL)
-    {
-        // reset buffer used in GET
-        response_buf->size = 0;
-        m_response_buf = response_buf;
-    }
 
     // if the handle doesn't exist yet, init
     if (m_client_handle == NULL)
@@ -202,21 +190,15 @@ http_post(const provider_info_t *provider,
           char *headers,
           const char *body,
           size_t body_size,
-          payload_t *response_buf,
           uint32_t *response_code)
 {
-    if (response_buf != NULL)
-    {
-        // reset buffer used in POST
-        response_buf->size = 0;
-    }
 
     esp_http_client_config_t config = {
         .host = provider->url,
         .path = relative_path,
         .event_handler = http_event_handle,
-        .user_data = response_buf->data,        // Pass address of local buffer to get response
-        .buffer_size = response_buf->size,
+        .user_data = NULL,        // Pass address of local buffer to get response
+        .buffer_size = 0,
         .disable_auto_redirect = true,
         .cert_pem = provider->cert_pem,
     };
