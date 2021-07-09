@@ -16,7 +16,7 @@
 
 ret_code_t
 http_init(const provider_info_t *provider,
-          size_t (*response_payload_cb)(void *chunk,
+          size_t (*response_payload_cb)(char *chunk,
                                         size_t chunk_size))
 {
     LOG_ERROR("Weak implementation of http_init");

@@ -13,7 +13,7 @@ static const char *TAG = "http_esp";
 
 static esp_http_client_handle_t m_client_handle = NULL;
 static size_t
-(*m_response_payload_cb)(void *received_data,
+(*m_response_payload_cb)(char *received_data,
                          size_t size);
 
 static esp_err_t
@@ -108,7 +108,7 @@ set_headers(const char *headers, size_t len)
 
 ret_code_t
 http_init(const provider_info_t *provider,
-          size_t (*response_payload_cb)(void *chunk,
+          size_t (*response_payload_cb)(char *chunk,
                                         size_t chunk_size))
 {
     if (response_payload_cb != NULL)

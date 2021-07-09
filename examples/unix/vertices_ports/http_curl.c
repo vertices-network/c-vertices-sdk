@@ -10,7 +10,7 @@
 
 static CURL *m_curl;
 static size_t
-(*m_response_payload_cb)(void *chunk,
+(*m_response_payload_cb)(char *chunk,
                          size_t chunk_size);
 
 static size_t
@@ -24,7 +24,7 @@ response_callback(void *chunk,
 
 ret_code_t
 http_init(const provider_info_t *provider,
-          size_t (*response_payload_cb)(void *chunk,
+          size_t (*response_payload_cb)(char *chunk,
                                         size_t chunk_size))
 {
     curl_global_init(CURL_GLOBAL_DEFAULT);

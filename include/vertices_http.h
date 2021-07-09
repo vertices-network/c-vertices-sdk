@@ -25,7 +25,7 @@ extern "C" {
 /// \return \c VTC_SUCCESS on success, otherwise error depends on implementation
 ret_code_t
 http_init(const provider_info_t *provider,
-          size_t (*response_payload_cb)(void *chunk,
+          size_t (*response_payload_cb)(char *chunk,
                                         size_t chunk_size));
 
 /// HTTP GET request

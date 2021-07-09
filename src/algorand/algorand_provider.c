@@ -13,13 +13,13 @@
 #include "cJSON.h"
 
 static size_t
-response_payload_callback(void *chunk, size_t size);
+response_payload_callback(char *chunk, size_t size);
 
 static char rx_buf[HTTP_MAXIMUM_CONTENT_LENGTH];
 static provider_t m_provider = {0};
 
 static size_t
-response_payload_callback(void *chunk, size_t size)
+response_payload_callback(char *chunk, size_t size)
 {
     LOG_DEBUG("Received %zu bytes", size);
 
