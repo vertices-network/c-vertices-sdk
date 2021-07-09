@@ -53,7 +53,7 @@ http_get(const provider_info_t *provider,
 /// \return error codes:
 /// - \c VTC_SUCCESS on success
 /// - \c VTC_ERROR_OFFLINE if offline
-/// - \c VTC_HTTP_ERROR (+error) on HTTP error.
+/// - \c VTC_HTTP_ERROR on HTTP error: check response_code.
 ret_code_t
 http_post(const provider_info_t *provider,
           const char *relative_path,
@@ -62,6 +62,7 @@ http_post(const provider_info_t *provider,
           size_t body_size,
           uint32_t *response_code);
 
+/// Close/deinit the client
 void
 http_close(void);
 
