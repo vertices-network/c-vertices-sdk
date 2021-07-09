@@ -57,7 +57,7 @@ vertices_evt_handler(vtc_evt_t *evt)
             err_code = vertices_transaction_get(evt->bufid, &tx);
             if (err_code == VTC_SUCCESS)
             {
-                LOG_DEBUG("About to sign tx: data length %lu", tx->payload_length);
+                LOG_DEBUG("About to sign tx: data length %lu", tx->payload_body_length);
 
                 // libsodium wants to have private and public keys concatenated
                 unsigned char keys[crypto_sign_ed25519_SECRETKEYBYTES] = {0};
@@ -67,14 +67,16 @@ vertices_evt_handler(vtc_evt_t *evt)
                        ADDRESS_LENGTH);
 
                 // prepend "TX" to the payload before signing
-                unsigned char to_be_signed[tx->payload_length + 2];
+                unsigned char to_be_signed[tx->payload_body_length + 2];
                 to_be_signed[0] = 'T';
                 to_be_signed[1] = 'X';
-                memcpy(&to_be_signed[2], &tx->payload[tx->payload_offset], tx->payload_length);
+
+                // copy body
+                memcpy(&to_be_signed[2], &tx->payload[tx->payload_header_length], tx->payload_body_length);
 
                 // sign the payload
                 crypto_sign_ed25519_detached(tx->signature,
-                                             0, to_be_signed, tx->payload_length + 2, keys);
+                                             0, to_be_signed, tx->payload_body_length + 2, keys);
 
                 char b64_signature[128] = {0};
                 size_t b64_signature_len = sizeof(b64_signature);
@@ -103,7 +105,7 @@ vertices_evt_handler(vtc_evt_t *evt)
                 return VTC_ERROR_NOT_FOUND;
             }
 
-            fwrite(tx->payload, tx->payload_offset + tx->payload_length, 1, fstx);
+            fwrite(tx->payload, tx->payload_header_length + tx->payload_body_length, 1, fstx);
             fclose(fstx);
 
             FILE *ftx = fopen(CONFIG_PATH "../tx.bin", "wb");
@@ -117,9 +119,9 @@ vertices_evt_handler(vtc_evt_t *evt)
             // the one-element map takes 4 bytes into our message packed payload <=> `txn`
             // we also add the `map` type before
             // which results in 5-bytes to be added before the payload at `payload_offset`
-            char payload[tx->payload_length + 5];
+            char payload[tx->payload_body_length + 5];
             payload[0] = (char) 0x81; // starting flag for map of one element
-            memcpy(&payload[1], &tx->payload[tx->payload_offset - 4], tx->payload_length + 4);
+            memcpy(&payload[1], &tx->payload[tx->payload_header_length - 4], tx->payload_body_length + 4);
 
             fwrite(payload, sizeof payload, 1, ftx);
             fclose(ftx);

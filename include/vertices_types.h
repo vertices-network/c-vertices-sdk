@@ -98,11 +98,11 @@ typedef struct
 
 typedef struct
 {
-    unsigned char payload[TX_PAYLOAD_MAX_LENGTH];
+    unsigned char payload[TX_PAYLOAD_MAX_LENGTH]; ///< Full payload, comprised of the header + body. The body part is the signed part (prepended with "TX")
     size_t
-        payload_length;  ///< length of data to be signed. if not 0, indicates that TX is pending.
+        payload_header_length;  ///< Header size. Do not use for signing. Full \c payload size is: \c payload_header_length + \c payload_body_length
     size_t
-        payload_offset;  ///< start of the payload to be signed. Full payload size is: \c payload_length + \c payload_offset
+        payload_body_length;  ///< Body size. Length of data to be signed. if not 0, indicates that TX is pending.
     unsigned char signature[SIGNATURE_LENGTH];
     unsigned char id[TRANSACTION_HASH_STR_MAX_LENGTH
     ]; ///< Unique Identifier of the transaction. It can be used to find the transaction in the ledger

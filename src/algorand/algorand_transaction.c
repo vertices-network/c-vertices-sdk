@@ -25,7 +25,7 @@ encode_tx_replace_signature(size_t bufid)
     ret_code_t err_code = VTC_ERROR_NOT_FOUND;
 
     // check that a payload is ready
-    if (m_pending_tx_buffer[bufid].payload_length == 0)
+    if (m_pending_tx_buffer[bufid].payload_body_length == 0)
     {
         return VTC_ERROR_INVALID_PARAM;
     }
@@ -37,7 +37,7 @@ encode_tx_replace_signature(size_t bufid)
     mpack_reader_t reader;
     mpack_reader_init_data(&reader,
                            (const char *) m_pending_tx_buffer[bufid].payload,
-                           m_pending_tx_buffer[bufid].payload_length);
+                           m_pending_tx_buffer[bufid].payload_body_length);
 
     mpack_tag_t map_tag = mpack_read_tag(&reader);
     if (mpack_reader_error(&reader) == mpack_ok && mpack_tag_type(&map_tag) == mpack_type_map)
@@ -87,8 +87,8 @@ encode_tx(transaction_t *tx)
 
     mpack_write_cstr(&writer, "txn");
 
-    // from there, the payload is part of the signature we store the offset location
-    m_pending_tx_buffer[m_tx_buffer_idx].payload_offset = (size_t) (writer.current - writer.buffer);
+    // from there, the payload is part of the signature body, we store the offset location
+    m_pending_tx_buffer[m_tx_buffer_idx].payload_header_length = (size_t) (writer.current - writer.buffer);
 
     // minimum is 7 fields in header map
     // add some depending on `tx`
@@ -222,8 +222,8 @@ encode_tx(transaction_t *tx)
     mpack_finish_map(&writer); // finished root map
 
     size = mpack_writer_buffer_used(&writer);
-    m_pending_tx_buffer[m_tx_buffer_idx].payload_length =
-        size - m_pending_tx_buffer[m_tx_buffer_idx].payload_offset;
+    m_pending_tx_buffer[m_tx_buffer_idx].payload_body_length =
+        size - m_pending_tx_buffer[m_tx_buffer_idx].payload_header_length;
 
     LOG_DEBUG("mpack used %zu bytes to encode tx", size);
 
@@ -242,7 +242,7 @@ transaction_pay(account_info_t *sender, char *receiver, uint64_t amount, void *p
 {
     ret_code_t err_code;
 
-    if (m_pending_tx_buffer[m_tx_buffer_idx].payload_length != 0)
+    if (m_pending_tx_buffer[m_tx_buffer_idx].payload_body_length != 0)
     {
         return VTC_ERROR_NO_MEM;
     }
@@ -259,7 +259,7 @@ transaction_pay(account_info_t *sender, char *receiver, uint64_t amount, void *p
         }
     }
 
-    m_pending_tx_buffer[m_tx_buffer_idx].payload_length =
+    m_pending_tx_buffer[m_tx_buffer_idx].payload_body_length =
         sizeof m_pending_tx_buffer[m_tx_buffer_idx].payload;
 
     // instantiate transaction
@@ -310,12 +310,12 @@ transaction_appl(account_info_t *sender,
 {
     ret_code_t err_code;
 
-    if (m_pending_tx_buffer[m_tx_buffer_idx].payload_length != 0)
+    if (m_pending_tx_buffer[m_tx_buffer_idx].payload_body_length != 0)
     {
         return VTC_ERROR_NO_MEM;
     }
 
-    m_pending_tx_buffer[m_tx_buffer_idx].payload_length =
+    m_pending_tx_buffer[m_tx_buffer_idx].payload_body_length =
         sizeof m_pending_tx_buffer[m_tx_buffer_idx].payload;
 
     // instantiate transaction
@@ -377,7 +377,7 @@ transaction_appl(account_info_t *sender,
 ret_code_t
 transaction_get(size_t bufid, signed_transaction_t **tx)
 {
-    if (m_pending_tx_buffer[bufid].payload_length == 0)
+    if (m_pending_tx_buffer[bufid].payload_body_length == 0)
     {
         return VTC_ERROR_INVALID_PARAM;
     }
@@ -390,7 +390,7 @@ transaction_get(size_t bufid, signed_transaction_t **tx)
 ret_code_t
 transaction_free(size_t bufid)
 {
-    if (m_pending_tx_buffer[bufid].payload_length == 0)
+    if (m_pending_tx_buffer[bufid].payload_body_length == 0)
     {
         return VTC_ERROR_INVALID_PARAM;
     }
@@ -403,7 +403,7 @@ transaction_free(size_t bufid)
 ret_code_t
 transaction_pending_send(size_t bufid)
 {
-    if (m_pending_tx_buffer[bufid].payload_length == 0)
+    if (m_pending_tx_buffer[bufid].payload_body_length == 0)
     {
         return VTC_ERROR_INVALID_PARAM;
     }
@@ -413,8 +413,8 @@ transaction_pending_send(size_t bufid)
     err_code = encode_tx_replace_signature(bufid);
     VTC_ASSERT(err_code);
 
-    size_t payload_len = m_pending_tx_buffer[bufid].payload_length
-        + m_pending_tx_buffer[bufid].payload_offset;
+    size_t payload_len = m_pending_tx_buffer[bufid].payload_body_length
+        + m_pending_tx_buffer[bufid].payload_header_length;
     err_code = provider_tx_post(m_pending_tx_buffer[bufid].payload,
                                 payload_len, m_pending_tx_buffer[bufid].id);
 

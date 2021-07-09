@@ -86,7 +86,7 @@ vertices_evt_handler(vtc_evt_t *evt)
             err_code = vertices_transaction_get(evt->bufid, &tx);
             if (err_code == VTC_SUCCESS)
             {
-                LOG_DEBUG("About to sign tx: data length %u", tx->payload_length);
+                LOG_DEBUG("About to sign tx: data length %u", tx->payload_body_length);
 
                 // libsodium wants to have private and public keys concatenated
                 unsigned char keys[crypto_sign_ed25519_SECRETKEYBYTES] = {0};
@@ -96,14 +96,14 @@ vertices_evt_handler(vtc_evt_t *evt)
                        ADDRESS_LENGTH);
 
                 // prepend "TX" to the payload before signing
-                unsigned char to_be_signed[tx->payload_length + 2];
+                unsigned char to_be_signed[tx->payload_body_length + 2];
                 to_be_signed[0] = 'T';
                 to_be_signed[1] = 'X';
-                memcpy(&to_be_signed[2], &tx->payload[tx->payload_offset], tx->payload_length);
+                memcpy(&to_be_signed[2], &tx->payload[tx->payload_header_length], tx->payload_body_length);
 
                 // sign the payload
                 crypto_sign_ed25519_detached(tx->signature,
-                                             0, to_be_signed, tx->payload_length + 2, keys);
+                                             0, to_be_signed, tx->payload_body_length + 2, keys);
 
                 char b64_signature[128] = {0};
                 size_t b64_signature_len = sizeof(b64_signature);
