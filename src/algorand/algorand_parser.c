@@ -4,6 +4,8 @@
 
 #include <mpack-reader.h>
 #include <vertices_log.h>
+#include <cJSON.h>
+#include <base64.h>
 #include "parser.h"
 
 //#define DEBUG_PARSER // to enable maximum verbosity and make the parser fail on error
@@ -293,7 +295,9 @@ string_element(void *context, const char *data, uint32_t length)
             err_code = VTC_ERROR_NO_MEM;
         }
 
-        memset(account->apps_local[account->app_idx].key_values.values[kv_idx].name, 0, APPS_KV_NAME_MAX_LENGTH);
+        memset(account->apps_local[account->app_idx].key_values.values[kv_idx].name,
+               0,
+               APPS_KV_NAME_MAX_LENGTH);
         memcpy(account->apps_local[account->app_idx].key_values.values[kv_idx].name,
                data,
                length < (APPS_KV_NAME_MAX_LENGTH - 1) ? length : (APPS_KV_NAME_MAX_LENGTH - 1));
@@ -515,7 +519,7 @@ parse_element(mpack_reader_t *reader, int depth,
 }
 
 ret_code_t
-parser_account(const char *buf, size_t length, account_details_t *account)
+parser_account_mpack(const char *buf, size_t length, account_details_t *account)
 {
     // we are reading messagepack data
     mpack_reader_t reader;
@@ -528,6 +532,116 @@ parser_account(const char *buf, size_t length, account_details_t *account)
     // crash if we are trying to debug the parser
     VTC_ASSERT(err_code);
 #endif
+
+    return err_code;
+}
+
+ret_code_t
+parser_application_json(const char *buf, size_t length, app_values_t *global_states)
+{
+    ret_code_t err_code = VTC_SUCCESS;
+
+    cJSON *json = cJSON_Parse(buf);
+    if (json == NULL)
+    {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL)
+        {
+            LOG_ERROR("JSON, error before: %s", error_ptr);
+        }
+        err_code = VTC_ERROR_INTERNAL;
+    }
+    else
+    {
+        const cJSON
+            *app_id = cJSON_GetObjectItemCaseSensitive(json, "id");
+        if (cJSON_IsNumber(app_id))
+        {
+            LOG_DEBUG("Parsing application: %i", app_id->valueint);
+        }
+
+        const cJSON
+            *params = cJSON_GetObjectItemCaseSensitive(json, "params");
+        if (params == NULL)
+        {
+            return VTC_ERROR_NOT_FOUND;
+        }
+
+        const cJSON
+            *globals = cJSON_GetObjectItemCaseSensitive(params, "global-state");
+        if (cJSON_IsArray(globals))
+        {
+            int size = cJSON_GetArraySize(globals);
+            for (int i = 0; i < size; ++i)
+            {
+                const cJSON *element = cJSON_GetArrayItem(globals, i);
+                const cJSON
+                    *key = cJSON_GetObjectItemCaseSensitive(element, "key");
+                if (cJSON_IsString(key) && key->valuestring != NULL)
+                {
+                    char key_str[16] = {0};
+                    size_t len = 16;
+                    b64_decode(key->valuestring, strlen(key->valuestring), key_str, &len);
+                    LOG_DEBUG("Key: %s", key_str);
+
+                    memcpy(global_states->values[global_states->count].name,
+                           key_str,
+                           sizeof(global_states->values[global_states->count].name));
+
+                    const cJSON
+                        *value = cJSON_GetObjectItemCaseSensitive(element, "value");
+                    if (value == NULL)
+                    {
+                        return VTC_ERROR_NOT_FOUND;
+                    }
+                    const cJSON
+                        *type = cJSON_GetObjectItemCaseSensitive(value, "type");
+                    if (cJSON_IsNumber(type))
+                    {
+                        if (type->valueint == VALUE_TYPE_INTEGER)
+                        {
+                            const cJSON
+                                *integer = cJSON_GetObjectItemCaseSensitive(value, "uint");
+                            if (integer == NULL || !cJSON_IsNumber(integer))
+                            {
+                                return VTC_ERROR_NOT_FOUND;
+                            }
+
+                            global_states->values[global_states->count].type = VALUE_TYPE_INTEGER;
+                            global_states->values[global_states->count].value_uint =
+                                (uint64_t) integer->valueint;
+                        }
+                        else if (type->valueint == VALUE_TYPE_BYTESLICE)
+                        {
+                            const cJSON
+                                *bytes = cJSON_GetObjectItemCaseSensitive(value, "bytes");
+                            if (bytes == NULL || !cJSON_IsString(bytes))
+                            {
+                                return VTC_ERROR_NOT_FOUND;
+                            }
+
+                            global_states->values[global_states->count].type = VALUE_TYPE_INTEGER;
+                            size_t bytes_len = strlen(bytes->valuestring);
+
+                            // cannot copy more than available space
+                            // fixme should we return an error?
+                            if (bytes_len > sizeof(global_states->values[global_states->count].value_slice))
+                            {
+                                LOG_WARNING("Cannot store full byte-slice");
+                                bytes_len = sizeof(global_states->values[global_states->count].value_slice);
+                            }
+
+                            memcpy(global_states->values[global_states->count].value_slice,
+                                   bytes->valuestring,
+                                   bytes_len);
+                        }
+                    }
+
+                    global_states->count += 1;
+                }
+            }
+        }
+    }
 
     return err_code;
 }

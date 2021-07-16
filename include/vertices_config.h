@@ -36,4 +36,21 @@
 #define OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES     128
 #endif
 
+// application-related
+#ifndef APPS_MAX_COUNT
+#define APPS_MAX_COUNT                  3   //!< Maximum number of applications per account
+#endif
+
+#ifndef APPS_KV_MAX_COUNT
+#define APPS_KV_MAX_COUNT               8   //!< Key-Value maximum count
+#endif
+
+#ifndef APPS_KV_NAME_MAX_LENGTH
+#define APPS_KV_NAME_MAX_LENGTH         8   //!< Key maximum length (ASCII-encoded)
+#endif
+
+#ifndef APPS_KV_SLICE_MAX_SIZE
+#define APPS_KV_SLICE_MAX_SIZE          8   //!< Byte slice maximum length
+#endif
+
 #endif //VERTICES_SDK_INC_VERTICES_CONFIG_H

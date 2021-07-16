@@ -52,6 +52,16 @@ vertices_transaction_pay_new(account_info_t *account, char *receiver, uint64_t a
 ret_code_t
 vertices_transaction_app_call(account_info_t *account, uint64_t app_id, void *params);
 
+/// Get application global states. Parse variables are put into \c global_states
+/// \param app_id Application ID
+/// \param global_states Key-value pairs to store variables
+/// \return codes
+///     * VTC_SUCCESS on success: key-values have been parsed correctly and put into global_states
+///     * VTC_ERROR_INTERNAL if unable to instantiate parser
+///     * VTC_ERROR_NOT_FOUND if key not found
+ret_code_t
+vertices_application_get(uint64_t app_id, app_values_t * global_states);
+
 /// Get transaction based on event (identified by \c vtc_evt_t::bufid)
 /// \param bufid Event bufid
 /// \param tx Address of pointer to transaction: the function will modify this pointer

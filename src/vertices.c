@@ -110,6 +110,12 @@ vertices_transaction_app_call(account_info_t *account, uint64_t app_id, void *pa
 }
 
 ret_code_t
+vertices_application_get(uint64_t app_id, app_values_t * global_states)
+{
+    return provider_application_info_get(app_id, global_states);
+}
+
+ret_code_t
 vertices_event_tx_get(size_t bufid, signed_transaction_t **tx)
 {
     return transaction_get(bufid, tx);

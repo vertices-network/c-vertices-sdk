@@ -36,6 +36,27 @@ response_payload_callback(char *chunk, size_t size)
     return size;
 }
 
+ret_code_t
+provider_application_info_get(uint64_t app_id, app_values_t * global_states)
+{
+    char relative_path[128] = {0};
+
+    int ret = sprintf(relative_path, "/v2/applications/%llu", app_id);
+    VTC_ASSERT_BOOL(ret < 128 && ret >= 0);
+
+    uint32_t response_code = 0;
+    m_provider.response_buffer.size = 0;
+    ret_code_t err_code = http_get(&m_provider.provider,
+                                   relative_path,
+                                   m_provider.provider.header, &response_code);
+    if (err_code == VTC_SUCCESS)
+    {
+        // parse JSON
+        err_code = parser_application_json(rx_buf, m_provider.response_buffer.size, global_states);
+    }
+
+    return err_code;
+}
 
 ret_code_t
 provider_account_info_get(account_details_t *account)
@@ -52,7 +73,7 @@ provider_account_info_get(account_details_t *account)
                                    m_provider.provider.header, &response_code);
     if (err_code == VTC_SUCCESS)
     {
-        parser_account(rx_buf, m_provider.response_buffer.size, account);
+        parser_account_mpack(rx_buf, m_provider.response_buffer.size, account);
     }
 
     return err_code;

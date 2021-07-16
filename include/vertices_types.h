@@ -15,7 +15,7 @@
 /// if \c TX_PAYLOAD_MAX_LENGTH is not enough, you can add up more space for encoded TX
 /// define \c OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES as compiler flag
 #ifndef OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES
-#define OPTIONAL_TX_FIELDS_MAX_SIZE 0
+#define OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES 0
 #endif
 
 // addresses
@@ -31,13 +31,6 @@
 
 // HTTP payload
 #define TX_PAYLOAD_MAX_LENGTH           (512+OPTIONAL_TX_FIELDS_MAX_SIZE_BYTES) ///< Encoded TX maximum length in bytes
-
-// application-related
-#define APPS_MAX_COUNT                  3   //!< Maximum number of applications per account
-#define APPS_KV_MAX_COUNT               8   //!< Key-Value maximum count
-#define APPS_KV_NAME_MAX_LENGTH         8   //!< Key maximum length (ASCII-encoded)
-#define APPS_KV_SLICE_MAX_SIZE          8   //!< Byte slice maximum length
-#define APP_ARGS_MAX_LENGTH             128 //!<
 
 
 /// Asynchronous operations can be handled using Vertices events types

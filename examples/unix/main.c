@@ -372,6 +372,24 @@ main(int argc, char *argv[])
 
         case APP_CALL_TX:
         {
+            // get application information
+            LOG_INFO("Application %u, global states", APP_ID);
+
+            app_values_t app_kv = {0};
+            err_code = vertices_application_get(APP_ID, &app_kv);
+            VTC_ASSERT(err_code);
+            for (uint32_t i = 0; i < app_kv.count; ++i)
+            {
+                if (app_kv.values[i].type == VALUE_TYPE_INTEGER)
+                {
+                    LOG_INFO("%s: %llu", app_kv.values[i].name, app_kv.values[i].value_uint);
+                }
+                else if (app_kv.values[i].type == VALUE_TYPE_BYTESLICE)
+                {
+                    LOG_INFO("%s: %s", app_kv.values[i].name, app_kv.values[i].value_slice);
+                }
+            }
+
             // send application call
             app_values_t kv = {0};
             kv.count = 1;

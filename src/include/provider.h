@@ -30,6 +30,9 @@ typedef struct
 } provider_t;
 
 ret_code_t
+provider_application_info_get(uint64_t app_id, app_values_t * global_states);
+
+ret_code_t
 provider_account_info_get(account_details_t *account);
 
 /// Get provider version
