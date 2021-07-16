@@ -56,9 +56,9 @@ vertices_transaction_app_call(account_info_t *account, uint64_t app_id, void *pa
 /// \param app_id Application ID
 /// \param global_states Key-value pairs to store variables
 /// \return codes
-///     * VTC_SUCCESS on success: key-values have been parsed correctly and put into global_states
-///     * VTC_ERROR_INTERNAL if unable to instantiate parser
-///     * VTC_ERROR_NOT_FOUND if key not found
+///     * \c VTC_SUCCESS on success: key-values have been parsed correctly and put into global_states
+///     * \c VTC_ERROR_INTERNAL if unable to instantiate parser
+///     * \c VTC_ERROR_NOT_FOUND if key not found
 ret_code_t
 vertices_application_get(uint64_t app_id, app_values_t * global_states);
 
