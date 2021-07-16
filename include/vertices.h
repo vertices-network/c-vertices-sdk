@@ -52,8 +52,12 @@ vertices_transaction_pay_new(account_info_t *account, char *receiver, uint64_t a
 ret_code_t
 vertices_transaction_app_call(account_info_t *account, uint64_t app_id, void *params);
 
+/// Get transaction based on event (identified by \c vtc_evt_t::bufid)
+/// \param bufid Event bufid
+/// \param tx Address of pointer to transaction: the function will modify this pointer
+/// \return
 ret_code_t
-vertices_transaction_get(size_t bufid, signed_transaction_t **tx);
+vertices_event_tx_get(size_t bufid, signed_transaction_t **tx);
 
 /// Schedule new Vertices event, see \c vtc_evt_t
 /// See \c vertices_event_process to process queued events

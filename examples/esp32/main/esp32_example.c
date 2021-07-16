@@ -83,7 +83,7 @@ vertices_evt_handler(vtc_evt_t *evt)
         case VTC_EVT_TX_READY_TO_SIGN:
         {
             signed_transaction_t *tx = NULL;
-            err_code = vertices_transaction_get(evt->bufid, &tx);
+            err_code = vertices_event_tx_get(evt->bufid, &tx);
             if (err_code == VTC_SUCCESS)
             {
                 LOG_DEBUG("About to sign tx: data length %u", tx->payload_body_length);
