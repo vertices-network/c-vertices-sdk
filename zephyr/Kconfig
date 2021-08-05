@@ -1,0 +1,7 @@
+config VERTICES
+        bool "Vertices library"
+        default n
+        select MBEDTLS
+        help
+          Enable Zephyr Integration with the Vertices SDK
+          to connect your device to the Algorand Blockchain
