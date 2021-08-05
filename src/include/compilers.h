@@ -82,7 +82,9 @@
 #elif defined(__XTENSA__)
 #include "endian.h"
 #else
-#error declare swapping function
+#define XXH_swap64 __builtin_bswap64
+#define XXH_swap32 __builtin_bswap32
+#define XXH_swap16 __builtin_bswap16
 #endif
 
 #if (defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN) || \
