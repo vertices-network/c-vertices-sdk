@@ -22,9 +22,6 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     set(COMPILE_UNIX ON)
 endif()
 
-# Add vertices library
-add_subdirectory(src)
-
 # At this point there are two different targets possible:
 # - ESP32 microcontrollers: check whether running from idf.py or if CMAKE_TOOLCHAIN_FILE is
 #   set to utils/toolchain-esp32.cmake
@@ -51,7 +48,14 @@ elseif (COMPILE_UNIX)
 else()
     message(STATUS "Vertices SDK examples: generic")
 
+    # build CJSON static lib insteado of default shared lib
+    set(CJSON_OVERRIDE_BUILD_SHARED_LIBS ON)
+    set(CJSON_BUILD_SHARED_LIBS OFF)
+
     # Let's use the mbedtls and cJSON library provided with the SDK
     add_subdirectory(external/mbedtls)
     add_subdirectory(external/cJSON)
 endif ()
+
+# Add vertices library
+add_subdirectory(src)
