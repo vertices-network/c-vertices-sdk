@@ -25,7 +25,7 @@ typedef enum
     VTC_ERROR_INVALID_ADDR,
     VTC_ERROR_OFFLINE,
     VTC_ERROR_ASSERT_FAILS,
-    VTC_HTTP_ERROR = 0x10000000,
+    VTC_ERROR_HTTP_BASE = 0x10000000,
 } ret_code_t;
 
 /**@brief Structure containing info about an error of the type @ref NRF_FAULT_ID_SDK_ERROR.

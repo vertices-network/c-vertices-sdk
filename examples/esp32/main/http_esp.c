@@ -177,13 +177,13 @@ http_get(const provider_info_t *provider,
 
         if (*response_code >= 300)
         {
-            return VTC_HTTP_ERROR;
+            return VTC_ERROR_HTTP_BASE;
         }
     }
     else
     {
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
-        return VTC_HTTP_ERROR + err;
+        return VTC_ERROR_HTTP_BASE + err;
     }
 
     return VTC_SUCCESS;
@@ -249,13 +249,13 @@ http_post(const provider_info_t *provider,
 
         if (*response_code >= 300)
         {
-            return VTC_HTTP_ERROR;
+            return VTC_ERROR_HTTP_BASE;
         }
     }
     else
     {
         ESP_LOGE(TAG, "HTTP POST request failed: %s", esp_err_to_name(err));
-        return VTC_HTTP_ERROR + err;
+        return VTC_ERROR_HTTP_BASE + err;
     }
 
     return VTC_SUCCESS;

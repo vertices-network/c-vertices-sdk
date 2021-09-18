@@ -48,7 +48,7 @@ provider_version_get(provider_version_t *version);
 /// \return
 /// \c VTC_SUCCESS on success
 /// \c VTC_ERROR_OFFLINE when previously fetched data is being used. Those params can be used.
-/// \c VTC_HTTP_ERROR when error fetching tx params
+/// \c VTC_ERROR_HTTP_BASE when error fetching tx params
 ret_code_t
 provider_tx_params_load(transaction_t *tx);
 

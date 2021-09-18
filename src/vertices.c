@@ -40,7 +40,7 @@ vertices_version(provider_version_t *version)
 /// Check if node is alive
 /// \return
 /// * \c VTC_SUCCESS when API can be reached
-/// * \c VTC_HTTP_ERROR when an error occurs
+/// * \c VTC_ERROR_HTTP_BASE when an error occurs
 ret_code_t
 vertices_ping()
 {

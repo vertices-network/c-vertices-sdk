@@ -92,7 +92,7 @@ http_get(const provider_info_t *provider,
             {
                 // todo does the response code enter into uint32_t?
                 *response_code = (uint32_t) response;
-                err_code = VTC_HTTP_ERROR;
+                err_code = VTC_ERROR_HTTP_BASE;
             }
         }
 
@@ -172,7 +172,7 @@ http_post(const provider_info_t *provider,
 
             if (*response_code >= 300)
             {
-                err_code = VTC_HTTP_ERROR;
+                err_code = VTC_ERROR_HTTP_BASE;
             }
         }
 
