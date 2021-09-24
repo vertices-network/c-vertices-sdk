@@ -69,7 +69,7 @@ account_new(char *public_b32, account_info_t **account)
         {
             m_accounts[i].status = ACCOUNT_ADDED;
 
-            LOG_INFO("👛 Added account to wallet: #%zu", i);
+            LOG_INFO("👛 Added account to wallet: #%lu", (uint32_t) i);
             break;
         }
     }
