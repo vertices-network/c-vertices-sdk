@@ -197,7 +197,7 @@ vtc_wallet_task(void *param)
 
         vTaskDelay(60000);
 
-        vertices_account_free(alice_account.vtc_account);
+        vertices_account_update(alice_account.vtc_account);
     }
 
     ESP_LOGI(TAG,
