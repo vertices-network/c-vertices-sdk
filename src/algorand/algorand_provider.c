@@ -192,6 +192,11 @@ provider_tx_post(const uint8_t *bin_payload, size_t length, unsigned char *tx_id
                   header,
                   (const char *) bin_payload, length, &response_code);
 
+    if (response_code >= 300)
+    {
+        err_code = VTC_ERROR_HTTP_BASE + response_code;
+    }
+
     if (err_code == VTC_SUCCESS)
     {
         cJSON *json = cJSON_Parse(rx_buf);
