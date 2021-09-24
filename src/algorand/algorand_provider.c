@@ -21,7 +21,7 @@ static provider_t m_provider = {0};
 static size_t
 response_payload_callback(char *chunk, size_t size)
 {
-    LOG_DEBUG("Received %zu bytes", size);
+    LOG_DEBUG("Received %lu bytes", (uint32_t) size);
 
     VTC_ASSERT_BOOL(size < HTTP_MAXIMUM_CONTENT_LENGTH);
 
@@ -37,7 +37,7 @@ response_payload_callback(char *chunk, size_t size)
 }
 
 ret_code_t
-provider_application_info_get(uint64_t app_id, app_values_t * global_states)
+provider_application_info_get(uint64_t app_id, app_values_t *global_states)
 {
     char relative_path[128] = {0};
 
@@ -330,6 +330,12 @@ provider_ping()
         http_get(&m_provider.provider,
                  (char *) "/health",
                  m_provider.provider.header, &response_code);
+
+    if (response_code >= 300)
+    {
+        return VTC_ERROR_HTTP_BASE + response_code;
+    }
+
     return err_code;
 }
 
