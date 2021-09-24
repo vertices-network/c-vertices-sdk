@@ -225,7 +225,7 @@ encode_tx(transaction_t *tx)
     m_pending_tx_buffer[m_tx_buffer_idx].payload_body_length =
         size - m_pending_tx_buffer[m_tx_buffer_idx].payload_header_length;
 
-    LOG_DEBUG("mpack used %zu bytes to encode tx", size);
+    LOG_DEBUG("mpack used %u bytes to encode tx", size);
 
     // finish writing
     if (mpack_writer_destroy(&writer) != mpack_ok)
