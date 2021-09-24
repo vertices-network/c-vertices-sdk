@@ -88,7 +88,7 @@
 #endif
 
 #if (defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN) || \
-    (defined(_BYTE_ORDER) && _BYTE_ORDER == _LITTLE_ENDIAN) || \
+    (defined(_BYTE_ORDER) && _BYTE_ORDER == _BIG_ENDIAN) || \
     defined(__BIG_ENDIAN__) || \
     defined(__ARMEB__) || \
     defined(__THUMBEB__) || \
