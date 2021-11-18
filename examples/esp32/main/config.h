@@ -1,6 +1,8 @@
-//
-// Created by Cyril on 23/06/2021.
-//
+/*
+ * Copyright (c) 2021 Vertices Network <cyril@vertices.network>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #ifndef VERTICES_SDK_EXAMPLES_ESP32_MAIN_CONFIG_H
 #define VERTICES_SDK_EXAMPLES_ESP32_MAIN_CONFIG_H

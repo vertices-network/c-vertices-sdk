@@ -1,6 +1,8 @@
-//
-// Created by Cyril on 18/03/2021.
-//
+/*
+ * Copyright (c) 2021 Vertices Network <cyril@vertices.network>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #include <vertices_log.h>
 #include "vertices_errors.h"
@@ -21,7 +23,7 @@ static provider_t m_provider = {0};
 static size_t
 response_payload_callback(char *chunk, size_t size)
 {
-    LOG_DEBUG("Received %lu bytes", (uint32_t) size);
+    LOG_DEBUG("Received %u bytes", (uint32_t) size);
 
     VTC_ASSERT_BOOL(size < HTTP_MAXIMUM_CONTENT_LENGTH);
 

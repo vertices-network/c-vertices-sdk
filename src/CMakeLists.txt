@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: Apache-2.0
 message(STATUS "Vertices SDK location: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 if ($ENV{BLOCKCHAIN_PROVIDER})

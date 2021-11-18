@@ -1,13 +1,5 @@
-/**
- * \file config.h
- *
- * \brief Configuration options (set of defines)
- *
- *  This set of compile-time options may be used to enable
- *  or disable features selectively, and reduce the global
- *  memory footprint.
- */
 /*
+ *  Copyright (c) 2021 Vertices Network <cyril@vertices.network>
  *  Copyright (C) 2006-2018, ARM Limited, All Rights Reserved
  *  SPDX-License-Identifier: Apache-2.0
  *

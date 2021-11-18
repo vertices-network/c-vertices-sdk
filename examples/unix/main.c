@@ -1,6 +1,8 @@
-//
-// Created by Cyril on 17/03/2021.
-//
+/*
+ * Copyright (c) 2021 Vertices Network <cyril@vertices.network>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #include "vertices.h"
 #include <vertices_log.h>
@@ -394,7 +396,7 @@ main(int argc, char *argv[])
             app_values_t kv = {0};
             kv.count = 1;
             kv.values[0].type = VALUE_TYPE_INTEGER;
-            kv.values[0].value_uint = 20;
+            kv.values[0].value_uint = 32;
 
             err_code = vertices_transaction_app_call(alice_account.vtc_account, APP_ID, &kv);
             VTC_ASSERT(err_code);

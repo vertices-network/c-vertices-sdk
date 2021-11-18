@@ -1,6 +1,8 @@
-//
-// Created by Cyril on 17/03/2021.
-//
+/*
+ * Copyright (c) 2021 Vertices Network <cyril@vertices.network>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #ifndef VERTICES_CONFIG_VERTICES_CONFIG_H
 #define VERTICES_CONFIG_VERTICES_CONFIG_H

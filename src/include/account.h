@@ -1,9 +1,8 @@
-//! @file
-//!
-//! Vertices Network
-//! See License.txt for details
-//!
-//! Created by Cyril on 17/03/2021.
+/*
+ * Copyright (c) 2021 Vertices Network <cyril@vertices.network>
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 #ifndef C_VERTICES_SDK_SRC_ACCOUNT_H
 #define C_VERTICES_SDK_SRC_ACCOUNT_H
